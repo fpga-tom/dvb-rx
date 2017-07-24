@@ -5,25 +5,26 @@
  *      Author: tomas1
  */
 
-#include "IfoTest.h"
-
+#include <Fft.h>
+#include <mytypes.h>
+#include <Sync.h>
+#include <test/IntegerFrequencyOffsetTest.h>
 #include <fstream>
 #include <string>
 #include <vector>
 
-#include "Fft.h"
-#include "Sync.h"
+namespace dvb {
 
-IfoTest::IfoTest(const myConfig_t& c, const std::string& cf,
+IntegerFrequencyOffsetTest::IntegerFrequencyOffsetTest(const myConfig_t& c, const std::string& cf,
 		const std::string& of) :
-		Ifo { c }, cfile { cf }, ofile { of } {
+		IntegerFrequencyOffset { c }, cfile { cf }, ofile { of } {
 
 }
 
-IfoTest::~IfoTest() {
+IntegerFrequencyOffsetTest::~IntegerFrequencyOffsetTest() {
 }
 
-void IfoTest::testIfo() {
+void IntegerFrequencyOffsetTest::testIfo() {
 	auto sync = Sync { config };
 	auto fft = Fft { config };
 	auto inFile = std::ifstream(cfile);
@@ -43,4 +44,6 @@ void IfoTest::testIfo() {
 		outFile << i++ << "\t" << _out << std::endl;
 	}
 	outFile.close();
+}
+
 }

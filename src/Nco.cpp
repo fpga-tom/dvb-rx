@@ -12,6 +12,8 @@
 #include <iterator>
 #include <vector>
 
+namespace dvb {
+
 Nco::Nco(const myConfig_t& c) :
 		config { c }, phase { 0 }, integral { 0 } {
 }
@@ -51,4 +53,6 @@ auto Nco::freqShift(myBuffer_t& in, myReal_t& corr) {
 myBuffer_t Nco::update(myBuffer_t& in, myReal_t ifo, myReal_t f) {
 	auto c = correction(ifo, f);
 	return freqShift(in, c);
+}
+
 }

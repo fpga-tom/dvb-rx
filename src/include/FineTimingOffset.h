@@ -12,7 +12,9 @@
 
 #include "mytypes.h"
 
-class Fto {
+namespace dvb {
+
+class FineTimingOffset {
 	FRIEND_TEST(FtoTest);
 
 	const myConfig_t config;
@@ -20,9 +22,11 @@ class Fto {
 	fftwf_complex *inBuf, *outBuf;
 	fftwf_plan_s* plan;
 public:
-	Fto(const myConfig_t&);
-	virtual ~Fto();
+	FineTimingOffset(const myConfig_t&);
+	virtual ~FineTimingOffset();
 	myReal_t update(const myBuffer_t&);
 };
+
+}
 
 #endif /* SRC_FTO_H_ */

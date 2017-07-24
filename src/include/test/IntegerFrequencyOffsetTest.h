@@ -8,17 +8,20 @@
 #ifndef SRC_IFOTEST_H_
 #define SRC_IFOTEST_H_
 
-#include "Ifo.h"
-
+#include <IntegerFrequencyOffset.h>
 #include "mytypes.h"
 
-class IfoTest: public Ifo {
+namespace dvb {
+
+class IntegerFrequencyOffsetTest: public IntegerFrequencyOffset {
 	const std::string cfile;
 	const std::string ofile;
 public:
-	IfoTest(const myConfig_t&, const std::string&, const std::string&);
-	virtual ~IfoTest();
+	IntegerFrequencyOffsetTest(const myConfig_t&, const std::string&, const std::string&);
+	virtual ~IntegerFrequencyOffsetTest();
 	void testIfo();
 };
+
+}
 
 #endif /* SRC_IFOTEST_H_ */

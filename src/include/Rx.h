@@ -12,6 +12,8 @@
 
 #include "mytypes.h"
 
+namespace dvb {
+
 class Rx {
 	const myConfig_t config;
 	const std::string cfile;
@@ -21,5 +23,7 @@ public:
 	virtual ~Rx();
 	void rx();
 };
+
+}
 
 #endif /* SRC_RX_H_ */

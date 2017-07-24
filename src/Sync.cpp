@@ -15,12 +15,13 @@
 #include <iterator>
 #include <vector>
 
+namespace dvb {
 
 Sync::Sync(const myConfig_t &c) :
 		config { c }, delay(config.fft_len + config.sym_len), accDelay(
 				config.cp_len), acc { 0 }, current_size { 0 }, peakDelay(
-				lockCount), accPeak {
-				0 }, integral { 0 }, peak { 0 }, currentLock { 0 } {
+				lockCount), accPeak { 0 }, integral { 0 }, peak { 0 }, currentLock {
+				0 } {
 	current = std::make_shared<myBuffer_t>(config.sym_len);
 	next = std::make_shared<myBuffer_t>(config.sym_len);
 }
@@ -63,8 +64,7 @@ myBuffer_t Sync::correlate(const myBuffer_t& in, myBuffer_t& delay,
  * Looks for peak in correlated data
  */
 size_t Sync::findPeak(const myBuffer_t& b) {
-	auto max =
-			std::max_element(begin(b), end(b),
+	auto max = std::max_element(begin(b), end(b),
 			[](auto a, auto b) {return std::abs(a) < std::abs(b);});
 
 	auto peakIdx = std::distance(begin(b), max);
@@ -109,5 +109,6 @@ std::tuple<myBuffer_t, myReal_t> Sync::update(const myBuffer_t& in,
 	auto freq = std::arg(b[peak]) / 2.0 / M_PI / config.fft_len
 			* config.sample_rate;
 	auto result = align(in, peak);
-	return  { result, freq };
+	return {result, freq};
+}
 }

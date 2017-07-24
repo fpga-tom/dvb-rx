@@ -12,14 +12,18 @@
 
 #include "mytypes.h"
 
-class FtoTest {
+namespace dvb {
+
+class FineTimingOffsetTest {
 	const myConfig_t config;
 	const std::string cfile;
 	const std::string ofile;
 public:
-	FtoTest(const myConfig_t&, const std::string&, const std::string&);
-	virtual ~FtoTest();
+	FineTimingOffsetTest(const myConfig_t&, const std::string&, const std::string&);
+	virtual ~FineTimingOffsetTest();
 	void testFto();
 };
+
+}
 
 #endif /* SRC_FTOTEST_H_ */

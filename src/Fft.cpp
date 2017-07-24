@@ -12,6 +12,8 @@
 #include <deque>
 #include <iterator>
 
+namespace dvb {
+
 Fft::Fft(const myConfig_t& c) :
 		config { c } {
 //	inBuf = std::unique_ptr<fftwf_complex> {
@@ -81,4 +83,6 @@ myBuffer_t Fft::update(const myBuffer_t& in) {
 			begin(out));
 
 	return out;
+}
+
 }

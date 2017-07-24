@@ -13,6 +13,8 @@
 #include <vector>
 #include "Equalizer.h"
 
+namespace dvb {
+
 Equalizer::Equalizer(const myConfig_t& c) :
 		config { c } {
 	inBufInverse = reinterpret_cast<fftwf_complex*>(fftwf_malloc(
@@ -41,8 +43,22 @@ Equalizer::~Equalizer() {
 	fftwf_destroy_plan(planForward);
 }
 
-myBuffer_t Equalizer::update(const myBuffer_t& in,
-		const myBuffer_t& cpilots) {
+myBuffer_t Equalizer::selCpilots(const myBuffer_t& in) {
+	assert(in.size() == config.fft_len);
+
+	auto result = myBuffer_t(config.continual_pilots.size());
+	auto i = begin(config.continual_pilots);
+	std::generate(begin(result), end(result), [&]() {
+		return in[config.zeros_left + *i++];
+	});
+	return result;
+}
+
+
+myBuffer_t Equalizer::update(const myBuffer_t& in) {
+
+	auto cpilots = selCpilots(in);
+
 	assert(cpilots.size() == config.continual_pilots_count);
 	// calculate cir
 	auto c = begin(config.continual_pilots_value);
@@ -94,5 +110,7 @@ myBuffer_t Equalizer::update(const myBuffer_t& in,
 	});
 
 	return result;
+
+}
 
 }

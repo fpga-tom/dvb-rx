@@ -5,8 +5,7 @@
  *      Author: tomas1
  */
 
-#include "Fto.h"
-
+#include <FineTimingOffset.h>
 #include <algorithm>
 #include <cassert>
 #include <complex>
@@ -14,7 +13,9 @@
 #include <iterator>
 #include <vector>
 
-Fto::Fto(const myConfig_t& c) :
+namespace dvb {
+
+FineTimingOffset::FineTimingOffset(const myConfig_t& c) :
 		config { c } {
 	inBuf = reinterpret_cast<fftwf_complex*>(fftwf_malloc(
 			sizeof(fftwf_complex) * config.fft_len));
@@ -27,13 +28,13 @@ Fto::Fto(const myConfig_t& c) :
 
 }
 
-Fto::~Fto() {
+FineTimingOffset::~FineTimingOffset() {
 	fftwf_free(inBuf);
 	fftwf_free(outBuf);
 	fftwf_destroy_plan(plan);
 }
 
-myReal_t Fto::update(const myBuffer_t& in) {
+myReal_t FineTimingOffset::update(const myBuffer_t& in) {
 	assert(in.size() == config.continual_pilots_count);
 	auto z = myBuffer_t(config.continual_pilots_count - 1);
 	auto x = myBuffer_t(config.continual_pilots_count - 1);
@@ -88,5 +89,7 @@ myReal_t Fto::update(const myBuffer_t& in) {
 //
 //	return idx;
 
+
+}
 
 }

@@ -10,6 +10,8 @@
 
 #include "Sync.h"
 
+namespace dvb {
+
 class SyncTest: public Sync {
 	const std::string cfile;
 	const std::string ofile;
@@ -19,5 +21,7 @@ public:
 	void testCorrelation();
 	void testAlign();
 };
+
+}
 
 #endif /* SRC_SYNCTEST_H_ */

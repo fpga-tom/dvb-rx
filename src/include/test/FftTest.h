@@ -12,6 +12,8 @@
 
 #include "mytypes.h"
 
+namespace dvb {
+
 class FftTest {
 	const myConfig_t config;
 	const std::string cfile;
@@ -21,5 +23,7 @@ public:
 	virtual ~FftTest();
 	void testFft();
 };
+
+}
 
 #endif /* SRC_FFTTEST_H_ */

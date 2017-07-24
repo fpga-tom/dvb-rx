@@ -13,8 +13,12 @@
 
 #include "mytypes.h"
 
+namespace dvb {
+
 class Equalizer {
 	FRIEND_TEST(EqualizerTest);
+	FRIEND_TEST(FineTimingOffsetTest);
+	FRIEND_TEST(DataSelectorTest);
 
 	const myConfig_t config;
 	// inverse fft variables
@@ -24,10 +28,15 @@ class Equalizer {
 	// forward fft variables
 	fftwf_complex *inBufForward, *outBufForward;
 	fftwf_plan_s *planForward;
+
+	// helper methods
+	myBuffer_t selCpilots(const myBuffer_t&);
 public:
 	Equalizer(const myConfig_t&);
 	virtual ~Equalizer();
-	myBuffer_t update(const myBuffer_t&, const myBuffer_t&);
+	myBuffer_t update(const myBuffer_t&);
 };
+
+} /* namespace dvb */
 
 #endif /* SRC_EQUALIZER_H_ */

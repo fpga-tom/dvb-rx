@@ -5,21 +5,22 @@
  *      Author: tomas1
  */
 
-#include "Ifo.h"
-
+#include <IntegerFrequencyOffset.h>
 #include <algorithm>
 #include <complex>
 #include <iterator>
 #include <vector>
 
-Ifo::Ifo(const myConfig_t& c) :
+namespace dvb {
+
+IntegerFrequencyOffset::IntegerFrequencyOffset(const myConfig_t& c) :
 		config { c }, prev(config.fft_len) {
 }
 
-Ifo::~Ifo() {
+IntegerFrequencyOffset::~IntegerFrequencyOffset() {
 }
 
-int Ifo::update(myBuffer_t& in) {
+int IntegerFrequencyOffset::update(myBuffer_t& in) {
 
 	const int low = -4;
 	const int hi = 4;
@@ -42,5 +43,7 @@ int Ifo::update(myBuffer_t& in) {
 
 	auto max = std::max_element(begin(maxs), end(maxs));
 	return std::distance(begin(maxs), max) - hi;
+
+}
 
 }

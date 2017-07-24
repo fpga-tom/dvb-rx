@@ -5,18 +5,19 @@
  *      Author: tomas1
  */
 
+#include <FineTimingOffset.h>
+#include <IntegerFrequencyOffset.h>
 #include "Rx.h"
 
 #include <fstream>
 #include <vector>
 
-#include "CpilotsSelector.h"
 #include "Equalizer.h"
 #include "Fft.h"
-#include "Fto.h"
-#include "Ifo.h"
 #include "Nco.h"
 #include "Sync.h"
+
+namespace dvb {
 
 Rx::Rx(const myConfig_t& c, const std::string& cf, const std::string& of) :
 		config { c }, cfile { cf }, ofile { of } {
@@ -29,10 +30,9 @@ void Rx::rx() {
 	auto sync = Sync { config };
 	auto nco = Nco { config };
 	auto fft = Fft { config };
-	auto ifo = Ifo { config };
-	auto fto = Fto { config };
-	auto cpilots = CpilotsSelector { config };
-	auto cir = Equalizer { config };
+	auto ifo = IntegerFrequencyOffset { config };
+	auto fto = FineTimingOffset { config };
+	auto eq = Equalizer { config };
 	auto inFile = std::ifstream(cfile);
 	auto buf = myBuffer_t(config.sym_len);
 	auto c { 0 };
@@ -51,13 +51,14 @@ void Rx::rx() {
 		f = _f;
 		auto _fft = fft.update(_sync);
 		_ifo = ifo.update(_fft);
-		auto _cpilots = cpilots.update(_fft);
-		auto _cir = cir.update(_fft, _cpilots);
-		_fto = fto.update(_cpilots);
-		auto _out = _cir;
+		auto _eq = eq.update(_fft);
+		_fto = fto.update(_eq);
+		auto _out = _eq;
 
 		outFile.write(reinterpret_cast<char*>(_out.data()),
 				_out.size() * sizeof(myComplex_t));
 	}
 		outFile.close();
+}
+
 }

@@ -5,15 +5,16 @@
  *      Author: tomas1
  */
 
-#include "FftTest.h"
-
+#include <Fft.h>
+#include <mytypes.h>
+#include <Sync.h>
+#include <test/FftTest.h>
 #include <cstdlib>
 #include <fstream>
 #include <string>
-#include <tuple>
 #include <vector>
 
-#include "Sync.h"
+namespace dvb {
 
 FftTest::FftTest(const myConfig_t& c, const std::string& cf,
 		const std::string& of) :
@@ -45,4 +46,6 @@ void FftTest::testFft() {
 		}
 		outFile.close();
 	}
+}
+
 }

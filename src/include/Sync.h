@@ -12,6 +12,8 @@
 
 #include "mytypes.h"
 
+namespace dvb {
+
 const myReal_t SYNC_P_GAIN = 1e-5;
 const myReal_t SYNC_I_GAIN = 4e-2;
 
@@ -44,7 +46,6 @@ class Sync {
 	std::shared_ptr<myBuffer_t> current;		// current frame
 	std::shared_ptr<myBuffer_t> next;			// next frame
 
-
 	// helper methods
 	myBuffer_t correlate(const myBuffer_t&, myBuffer_t&, myDelay_t& accDelay,
 			myComplex_t& acc);
@@ -56,5 +57,7 @@ public:
 	std::tuple<myBuffer_t, myReal_t> update(const myBuffer_t& in,
 			const myReal_t);
 };
+
+} /* namespace dvb */
 
 #endif /* SRC_SYNC_H_ */

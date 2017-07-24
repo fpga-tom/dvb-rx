@@ -1,37 +1,25 @@
-#include "CpilotsSelectorTest.h"
-#include "EqualizerTest.h"
-#include "FtoTest.h"
-#include "Rx.h"
-
-/*
- * SyncTest.cpp
- *
- *  Created on: Jul 19, 2017
- *      Author: tomas1
- */
 #define UNITTEST_SYMBOL
-
-#include "FftTest.h"
-#include "IfoTest.h"
-#include "NcoTest.h"
-#include "SyncTest.h"
-
-
-#include "Sync.h"
+#include <test/DataSelectorTest.h>
+#include <config.h>
+#include <Rx.h>
+#include <test/EqualizerTest.h>
+#include <test/FftTest.h>
+#include <test/FineTimingOffsetTest.h>
+#include <test/IntegerFrequencyOffsetTest.h>
+#include <test/NcoTest.h>
+#include <test/SyncTest.h>
 
 #include <fstream>
 #include <iostream>
 #include <string>
 #include <vector>
 
-#include "config.h"
-#include "Fft.h"
-#include "Ifo.h"
-#include "mytypes.h"
-#include "Nco.h"
 
-const std::string cfile = "/opt/dvb/input/dvb_res_small2.cfile";
+
+const std::string cfile = "/opt/dvb/input/dvb_res_small.cfile";
 const std::string ofile = "/opt/dvb/output/";
+
+using namespace dvb;
 
 //
 //std::string exec(const char* cmd) {
@@ -69,7 +57,7 @@ void testFft() {
 
 void testIfo() {
 	std::cout << __PRETTY_FUNCTION__ << std::endl;
-	auto ifoTest = IfoTest { DVBT_CONFIG_1, cfile, ofile + "ifo." };
+	auto ifoTest = IntegerFrequencyOffsetTest { DVBT_CONFIG_1, cfile, ofile + "ifo." };
 	ifoTest.testIfo();
 }
 
@@ -87,21 +75,29 @@ void testNcoFractional() {
 
 void testCpilots() {
 	std::cout << __PRETTY_FUNCTION__ << std::endl;
-	auto cpilotsTest = CpilotsSelectorTest { DVBT_CONFIG_1, cfile, ofile
+	auto cpilotsTest =
+			EqualizerTest { DVBT_CONFIG_1, cfile, ofile
 			+ "selector." };
 	cpilotsTest.testSelector();
 }
 
-void testCir() {
+void testEqualizer() {
 	std::cout << __PRETTY_FUNCTION__ << std::endl;
-	auto cirTest = EqualizerTest { DVBT_CONFIG_1, cfile, ofile + "cir." };
-	cirTest.testCir();
+	auto equalizerTest = EqualizerTest { DVBT_CONFIG_1, cfile, ofile + "cir." };
+	equalizerTest.testEqualizer();
 }
 
 void testFto() {
 	std::cout << __PRETTY_FUNCTION__ << std::endl;
-	auto ftoTest = FtoTest { DVBT_CONFIG_1, cfile, ofile + "fto." };
+	auto ftoTest = FineTimingOffsetTest { DVBT_CONFIG_1, cfile, ofile + "fto." };
 	ftoTest.testFto();
+}
+
+void testDataSelector() {
+	std::cout << __PRETTY_FUNCTION__ << std::endl;
+	auto dataSelectorTest = DataSelectorTest { DVBT_CONFIG_1, cfile, ofile
+			+ "ds." };
+	dataSelectorTest.testDataSelector();
 }
 
 void rx() {
@@ -118,8 +114,9 @@ int main(int argc, char **argv) {
 	testNco();
 	testNcoFractional();
 	testCpilots();
-	testCir();
+	testEqualizer();
 	testFto();
+	testDataSelector();
 
 //	rx();
 	return 0;

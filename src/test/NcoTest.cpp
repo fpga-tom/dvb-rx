@@ -5,15 +5,16 @@
  *      Author: tomas1
  */
 
-#include "NcoTest.h"
-
-#include <cstdlib>
+#include <Fft.h>
+#include <IntegerFrequencyOffset.h>
+#include <mytypes.h>
+#include <Nco.h>
+#include <Sync.h>
+#include <test/NcoTest.h>
 #include <fstream>
 #include <vector>
 
-#include "Fft.h"
-#include "Ifo.h"
-#include "Sync.h"
+namespace dvb {
 
 NcoTest::NcoTest(const myConfig_t& c, const std::string& cf,
 		const std::string& of) :
@@ -30,7 +31,7 @@ void NcoTest::testNco() {
 	auto sync = Sync { config };
 	auto nco = Nco { config };
 	auto fft = Fft { config };
-	auto ifo = Ifo { config };
+	auto ifo = IntegerFrequencyOffset { config };
 	auto inFile = std::ifstream(cfile);
 	auto buf = myBuffer_t(config.sym_len);
 	auto c { 0 };
@@ -58,7 +59,7 @@ void NcoTest::testNcoFractional() {
 	auto nco = Nco { config };
 	auto sync = Sync { config };
 	auto fft = Fft { config };
-	auto ifo = Ifo { config };
+	auto ifo = IntegerFrequencyOffset { config };
 	auto inFile = std::ifstream(cfile);
 	auto buf = myBuffer_t(config.sym_len);
 	auto c { 0 };
@@ -81,4 +82,6 @@ void NcoTest::testNcoFractional() {
 		outFile << i++ << "\t" << f << std::endl;
 	}
 	outFile.close();
+}
+
 }

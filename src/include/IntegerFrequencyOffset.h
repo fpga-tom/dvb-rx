@@ -10,20 +10,23 @@
 
 #include "mytypes.h"
 
+namespace dvb {
 /**
  * calculates integer frequency offset
  */
-class Ifo {
-	FRIEND_TEST(IfoTest);
+class IntegerFrequencyOffset {
+	FRIEND_TEST(IntegerFrequencyOffsetTest);
 
 	myConfig_t config;
 	// previous ofdm symbol
 	myBuffer_t prev;
 public:
-	Ifo(const myConfig_t&);
-	virtual ~Ifo();
+	IntegerFrequencyOffset(const myConfig_t&);
+	virtual ~IntegerFrequencyOffset();
 
 	int update(myBuffer_t& in);
 };
+
+}
 
 #endif /* SRC_IFO_H_ */

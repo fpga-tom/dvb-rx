@@ -5,36 +5,35 @@
  *      Author: tomas1
  */
 
-#include "Fto.h"
-#include "FtoTest.h"
-
+#include <Equalizer.h>
+#include <Fft.h>
+#include <FineTimingOffset.h>
+#include <IntegerFrequencyOffset.h>
+#include <mytypes.h>
+#include <Nco.h>
+#include <Sync.h>
+#include <test/FineTimingOffsetTest.h>
 #include <fstream>
-#include <string>
 #include <vector>
 
-#include "CpilotsSelector.h"
-#include "Fft.h"
-#include "Ifo.h"
-#include "mytypes.h"
-#include "Nco.h"
-#include "Sync.h"
+namespace dvb {
 
 
-FtoTest::FtoTest(const myConfig_t& c, const std::string& cf,
+FineTimingOffsetTest::FineTimingOffsetTest(const myConfig_t& c, const std::string& cf,
 		const std::string& of) :
 		config { c }, cfile { cf }, ofile { of } {
 }
 
-FtoTest::~FtoTest() {
+FineTimingOffsetTest::~FineTimingOffsetTest() {
 }
 
-void FtoTest::testFto() {
+void FineTimingOffsetTest::testFto() {
 	auto sync = Sync { config };
 	auto nco = Nco { config };
 	auto fft = Fft { config };
-	auto ifo = Ifo { config };
-	auto cpilots = CpilotsSelector { config };
-	auto fto = Fto { config };
+	auto ifo = IntegerFrequencyOffset { config };
+	auto eq = Equalizer { config };
+	auto fto = FineTimingOffset { config };
 	auto inFile = std::ifstream(cfile);
 	auto buf = myBuffer_t(config.sym_len);
 	auto c { 0 };
@@ -53,7 +52,7 @@ void FtoTest::testFto() {
 		f = _f;
 		auto _fft = fft.update(_sync);
 		_ifo = ifo.update(_fft);
-		auto _cpilots = cpilots.update(_fft);
+		auto _cpilots = eq.selCpilots(_fft);
 		_fto = fto.update(_cpilots);
 		auto _out = _fto;
 
@@ -61,4 +60,6 @@ void FtoTest::testFto() {
 			outFile << i++ << "\t" << _out << std::endl;
 	}
 		outFile.close();
+}
+
 }

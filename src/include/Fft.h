@@ -13,7 +13,7 @@
 
 #include "mytypes.h"
 
-struct fftwf_plan_s;
+namespace dvb {
 
 class Fft {
 	FRIEND_TEST(FftTest);
@@ -29,5 +29,7 @@ public:
 
 	myBuffer_t update(const myBuffer_t& in);
 };
+
+}
 
 #endif /* SRC_FFT_H_ */

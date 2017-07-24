@@ -5,18 +5,17 @@
  *      Author: tomas1
  */
 
+#include <config.h>
+#include <mytypes.h>
+#include <test/SyncTest.h>
 #include "Sync.h"
-#include "SyncTest.h"
-
 #include <complex>
 #include <deque>
 #include <fstream>
-#include <iostream>
 #include <string>
 #include <vector>
 
-#include "config.h"
-#include "mytypes.h"
+namespace dvb {
 
 SyncTest::SyncTest(const myConfig_t& c, const std::string& cf,
 		const std::string& of) :
@@ -73,5 +72,7 @@ void SyncTest::testAlign() {
 		}
 		outFile.close();
 	}
+
+}
 
 }

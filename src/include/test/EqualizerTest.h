@@ -12,6 +12,7 @@
 
 #include "mytypes.h"
 
+namespace dvb {
 class EqualizerTest {
 	const myConfig_t config;
 	const std::string cfile;
@@ -19,7 +20,9 @@ class EqualizerTest {
 public:
 	EqualizerTest(const myConfig_t&, const std::string&, const std::string&);
 	virtual ~EqualizerTest();
-	void testCir();
+	void testEqualizer();
+	void testSelector();
 };
+} /* namespace dvb */
 
 #endif /* SRC_EQUALIZERTEST_H_ */

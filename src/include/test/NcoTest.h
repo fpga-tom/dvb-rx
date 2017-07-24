@@ -14,6 +14,8 @@
 
 #include "mytypes.h"
 
+namespace dvb {
+
 class NcoTest {
 	const myConfig_t config;
 	const std::string cfile;
@@ -24,5 +26,7 @@ public:
 	void testNco();
 	void testNcoFractional();
 };
+
+}
 
 #endif /* SRC_NCOTEST_H_ */
