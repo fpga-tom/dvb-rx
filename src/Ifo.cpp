@@ -1,0 +1,46 @@
+/*
+ * Ifo.cpp
+ *
+ *  Created on: Jul 21, 2017
+ *      Author: tomas1
+ */
+
+#include "Ifo.h"
+
+#include <algorithm>
+#include <complex>
+#include <iterator>
+#include <vector>
+
+Ifo::Ifo(const myConfig_t& c) :
+		config { c }, prev(config.fft_len) {
+}
+
+Ifo::~Ifo() {
+}
+
+int Ifo::update(myBuffer_t& in) {
+
+	const int low = -4;
+	const int hi = 4;
+
+	std::vector<myReal_t> maxs(hi - low + 1);
+
+	for (auto i { low }; i <= hi; i++) {
+
+		auto base { config.zeros_left + i };
+		auto acc = myComplex_t { 0, 0 };
+		for (auto t : config.continual_pilots) {
+			auto arg0 = in[base + t];
+			auto arg1 = prev[base + t];
+			acc += arg0 * std::conj(arg1);
+		}
+		maxs[i + hi] = std::abs(acc);
+	}
+
+	std::copy(begin(in), end(in), begin(prev));
+
+	auto max = std::max_element(begin(maxs), end(maxs));
+	return std::distance(begin(maxs), max) - hi;
+
+}
