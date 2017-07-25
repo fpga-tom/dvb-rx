@@ -18,11 +18,11 @@ class DataSelector {
 	std::vector<std::vector<int>> dataIdx;
 
 	// helper methods
-	int frameNum(const myBuffer_t&);
 public:
 	DataSelector(const myConfig_t&);
 	virtual ~DataSelector();
-	std::tuple<myBuffer_t, int> update(const myBuffer_t&);
+	int frameNum(const myBuffer_t&);
+	myBuffer_t update(const myBuffer_t&, int frame);
 };
 
 } /* namespace dvb */

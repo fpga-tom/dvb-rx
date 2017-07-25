@@ -16,7 +16,7 @@
 
 
 
-const std::string cfile = "/opt/dvb/input/dvb_res_small.cfile";
+const std::string cfile = "/opt/dvb/input/dvb_res.cfile";
 const std::string ofile = "/opt/dvb/output/";
 
 using namespace dvb;
@@ -107,6 +107,7 @@ void rx() {
 }
 
 int main(int argc, char **argv) {
+#ifdef TEST
 	testCorrelation();
 	testAlign();
 	testFft();
@@ -117,7 +118,8 @@ int main(int argc, char **argv) {
 	testEqualizer();
 	testFto();
 	testDataSelector();
-
-//	rx();
+#else
+	rx();
+#endif
 	return 0;
 }

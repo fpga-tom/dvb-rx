@@ -9,9 +9,8 @@
 #define SRC_EQUALIZER_H_
 
 #include <fftw3.h>
+#include <mytypes.h>
 #include <tuple>
-
-#include "mytypes.h"
 
 namespace dvb {
 
@@ -34,7 +33,7 @@ class Equalizer {
 public:
 	Equalizer(const myConfig_t&);
 	virtual ~Equalizer();
-	myBuffer_t update(const myBuffer_t&);
+	std::tuple<myBuffer_t, myBuffer_t> update(const myBuffer_t&);
 };
 
 } /* namespace dvb */

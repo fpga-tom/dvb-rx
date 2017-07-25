@@ -1,29 +1,30 @@
 /*
- * Cir.cpp
+ * EqualizerSpilots.cpp
  *
- *  Created on: Jul 23, 2017
+ *  Created on: Jul 25, 2017
  *      Author: tomas1
  */
 
+#include <ext/type_traits.h>
+#include <EqualizerSpilots.h>
 #include <algorithm>
 #include <cassert>
 #include <complex>
-#include <iostream>
+#include <deque>
 #include <iterator>
 #include <vector>
-#include "Equalizer.h"
 
 namespace dvb {
 
-Equalizer::Equalizer(const myConfig_t& c) :
+EqualizerSpilots::EqualizerSpilots(const myConfig_t& c) :
 		config { c } {
 	inBufInverse = reinterpret_cast<fftwf_complex*>(fftwf_malloc(
-			sizeof(fftwf_complex) * config.continual_pilots_count));
+			sizeof(fftwf_complex) * config.scattered_pilots_count));
 	outBufInverse = reinterpret_cast<fftwf_complex*>(fftwf_malloc(
-			sizeof(fftwf_complex) * config.continual_pilots_count));
+			sizeof(fftwf_complex) * config.scattered_pilots_count));
 
-	planInverse = fftwf_plan_dft_1d(config.continual_pilots_count,
-			inBufInverse, outBufInverse, FFTW_BACKWARD, FFTW_ESTIMATE);
+	planInverse = fftwf_plan_dft_1d(config.scattered_pilots_count, inBufInverse,
+			outBufInverse, FFTW_BACKWARD, FFTW_ESTIMATE);
 
 	inBufForward = reinterpret_cast<fftwf_complex*>(fftwf_malloc(
 			sizeof(fftwf_complex) * config.carriers));
@@ -34,7 +35,7 @@ Equalizer::Equalizer(const myConfig_t& c) :
 			outBufForward, FFTW_FORWARD, FFTW_ESTIMATE);
 }
 
-Equalizer::~Equalizer() {
+EqualizerSpilots::~EqualizerSpilots() {
 	fftwf_free(inBufInverse);
 	fftwf_free(outBufInverse);
 	fftwf_destroy_plan(planInverse);
@@ -43,26 +44,25 @@ Equalizer::~Equalizer() {
 	fftwf_destroy_plan(planForward);
 }
 
-myBuffer_t Equalizer::selCpilots(const myBuffer_t& in) {
-	assert(in.size() == config.fft_len);
+myBuffer_t EqualizerSpilots::selSpilots(const myBuffer_t& in, int frame) {
+	assert(in.size() == config.carriers);
 
-	auto result = myBuffer_t(config.continual_pilots.size());
-	auto i = begin(config.continual_pilots);
+	auto result = myBuffer_t(config.scattered_pilots_count);
+	auto i = begin(config.scattered_pilots[frame]);
 	std::generate(begin(result), end(result), [&]() {
-		return in[config.zeros_left + *i++];
+		return in[*i++];
 	});
 	return result;
 }
 
 
-std::tuple<myBuffer_t, myBuffer_t> Equalizer::update(const myBuffer_t& in) {
+myBuffer_t EqualizerSpilots::update(const myBuffer_t& in, int frame) {
+	auto spilots = selSpilots(in, frame);
 
-	auto cpilots = selCpilots(in);
-
-	assert(cpilots.size() == config.continual_pilots_count);
+	assert(spilots.size() == config.scattered_pilots_count);
 	// calculate cir
-	auto c = begin(config.continual_pilots_value);
-	std::transform(begin(cpilots), end(cpilots),
+	auto c = begin(config.scattered_pilots_value[frame]);
+	std::transform(begin(spilots), end(spilots),
 			reinterpret_cast<myComplex_t*>(inBufInverse), [&](auto v) {
 				return v * std::conj(*c++);
 			});
@@ -70,32 +70,31 @@ std::tuple<myBuffer_t, myBuffer_t> Equalizer::update(const myBuffer_t& in) {
 	// interpolate cir
 	fftwf_execute(planInverse);
 
-
-
 	// zero input buffer
 	std::fill(reinterpret_cast<myComplex_t*>(inBufForward),
 			reinterpret_cast<myComplex_t*>(inBufForward) + config.carriers, 0);
 
+	int cc = config.scattered_pilots_count / 2;
 	// align data
 	std::copy(reinterpret_cast<myComplex_t*>(outBufInverse),
 			reinterpret_cast<myComplex_t*>(outBufInverse)
-					+ config.carrier_center,
+					+ cc,
 			reinterpret_cast<myComplex_t*>(inBufForward));
 
 	std::copy(
 			reinterpret_cast<myComplex_t*>(outBufInverse)
-					+ config.carrier_center + 1,
+					+ cc + 1,
 			reinterpret_cast<myComplex_t*>(outBufInverse)
 					+ config.continual_pilots_count,
 			reinterpret_cast<myComplex_t*>(inBufForward) + config.carriers
-					- config.carrier_center);
+					- cc);
 
 	// execute interpolation
 	fftwf_execute(planForward);
 
 	// copy usefull carriers
 	auto tmp = myBuffer_t(config.carriers);
-	std::copy(begin(in) + config.zeros_left, end(in) - config.zeros_right,
+	std::copy(begin(in), end(in),
 			begin(tmp));
 
 	// apply cir
@@ -107,10 +106,9 @@ std::tuple<myBuffer_t, myBuffer_t> Equalizer::update(const myBuffer_t& in) {
 			reinterpret_cast<myComplex_t*>(outBufForward), begin(result),
 			[&](auto a, auto b) {
 				return a / b * (float)config.fft_len;
-	});
+			});
 
-	return {result, cpilots};
-
+	return result;
 }
 
-}
+} /* namespace dvb */

@@ -16,7 +16,7 @@ namespace dvb {
 
 const myReal_t PI2 = 2 * M_PI;
 const myReal_t NCO_P_GAIN = 1e-5;
-const myReal_t NCO_I_GAIN = 5e-2;
+const myReal_t NCO_I_GAIN = 3e-2;
 
 class Nco {
 	FRIEND_TEST(NcoTest);

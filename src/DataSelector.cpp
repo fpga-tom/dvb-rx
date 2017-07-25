@@ -73,9 +73,9 @@ int DataSelector::frameNum(const myBuffer_t& in) {
 
 }
 
-std::tuple<myBuffer_t, int> DataSelector::update(const myBuffer_t& in) {
+myBuffer_t DataSelector::update(const myBuffer_t& in,
+		int frame) {
 	assert(in.size() == config.carriers);
-	auto frame = frameNum(in);
 	auto result = myBuffer_t(config.data_carrier_count);
 
 	auto it = begin(result);
@@ -83,7 +83,7 @@ std::tuple<myBuffer_t, int> DataSelector::update(const myBuffer_t& in) {
 		*it++ = in[a];
 	}
 
-	return {result, frame};
+	return result;
 }
 
 } /* namespace dvb */

@@ -49,8 +49,7 @@ void EqualizerTest::testEqualizer() {
 		f = _f;
 		auto _fft = fft.update(_sync);
 		_ifo = ifo.update(_fft);
-		auto _cpilots = eq.selCpilots(_fft);
-		auto _cir = eq.update(_fft);
+		auto [_cir, _cpilots] = eq.update(_fft);
 		_fto = fto.update(_cpilots);
 		auto _out = _cir;
 

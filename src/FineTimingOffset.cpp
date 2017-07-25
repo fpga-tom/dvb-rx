@@ -17,21 +17,22 @@ namespace dvb {
 
 FineTimingOffset::FineTimingOffset(const myConfig_t& c) :
 		config { c } {
-	inBuf = reinterpret_cast<fftwf_complex*>(fftwf_malloc(
-			sizeof(fftwf_complex) * config.fft_len));
+//	inBuf = reinterpret_cast<fftwf_complex*>(fftwf_malloc(
+//			sizeof(fftwf_complex) * config.fft_len));
+//
+//	outBuf = reinterpret_cast<fftwf_complex*>(fftwf_malloc(
+//			sizeof(fftwf_complex) * config.fft_len));
+//
+//	plan = fftwf_plan_dft_1d(config.fft_len, inBuf, outBuf, FFTW_BACKWARD,
+//	FFTW_ESTIMATE);
 
-	outBuf = reinterpret_cast<fftwf_complex*>(fftwf_malloc(
-			sizeof(fftwf_complex) * config.fft_len));
-
-	plan = fftwf_plan_dft_1d(config.fft_len, inBuf, outBuf, FFTW_BACKWARD,
-	FFTW_ESTIMATE);
 
 }
 
 FineTimingOffset::~FineTimingOffset() {
-	fftwf_free(inBuf);
-	fftwf_free(outBuf);
-	fftwf_destroy_plan(plan);
+//	fftwf_free(inBuf);
+//	fftwf_free(outBuf);
+//	fftwf_destroy_plan(plan);
 }
 
 myReal_t FineTimingOffset::update(const myBuffer_t& in) {
@@ -51,6 +52,8 @@ myReal_t FineTimingOffset::update(const myBuffer_t& in) {
 			[](auto a, auto b) {
 				return std::conj(a) * b;
 			});
+
+
 	std::transform(begin(x), end(x), begin(z), begin(y), [](auto a, auto b) {
 		return std::conj(a) * b;
 	});

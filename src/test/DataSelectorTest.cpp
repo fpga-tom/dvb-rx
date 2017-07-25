@@ -53,10 +53,10 @@ void DataSelectorTest::testDataSelector() {
 		f = _f;
 		auto _fft = fft.update(_sync);
 		_ifo = ifo.update(_fft);
-		auto _cpilots = eq.selCpilots(_fft);
-		auto _eq = eq.update(_fft);
+		auto [_eq, _cpilots] = eq.update(_fft);
 		_fto = fto.update(_cpilots);
-		auto [_ds, _frame] = ds.update(_eq);
+		auto _frame = ds.frameNum(_eq);
+		auto _ds = ds.update(_eq, _frame);
 		auto _out = _ds;
 
 		auto outFile = std::ofstream { ofile + std::to_string(c++),
