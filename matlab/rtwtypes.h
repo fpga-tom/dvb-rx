@@ -3,9 +3,9 @@
 //
 // Code generated for Simulink model 'mydec1'.
 //
-// Model version                  : 1.7
+// Model version                  : 1.17
 // Simulink Coder version         : 8.12 (R2017a) 16-Feb-2017
-// C/C++ source code generated on : Tue Jul 25 20:41:36 2017
+// C/C++ source code generated on : Thu Jul 27 18:42:14 2017
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Intel->x86-64 (Linux 64)
@@ -31,9 +31,9 @@
 
 //=======================================================================*
 //  Target hardware information
-//    Device type: Intel->x86-64 (Linux 64)
+//    Device type: MATLAB Host
 //    Number of bits:     char:   8    short:   16    int:  32
-//                        long:  64
+//                        long:  64    long long:  64
 //                        native word size:  64
 //    Byte ordering: LittleEndian
 //    Signed integer division rounds to: Zero
@@ -59,7 +59,7 @@ typedef double real64_T;
 
 //===========================================================================*
 //  Generic type definitions: boolean_T, char_T, byte_T, int_T, uint_T,       *
-//                            real_T, time_T, ulong_T.                        *
+//                            real_T, time_T, ulong_T, ulonglong_T.           *
 // ===========================================================================
 typedef double real_T;
 typedef double time_T;
@@ -67,6 +67,7 @@ typedef unsigned char boolean_T;
 typedef int int_T;
 typedef unsigned int uint_T;
 typedef unsigned long ulong_T;
+typedef unsigned long long ulonglong_T;
 typedef char char_T;
 typedef unsigned char uchar_T;
 typedef char_T byte_T;

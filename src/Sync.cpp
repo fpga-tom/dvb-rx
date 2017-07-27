@@ -7,7 +7,7 @@
 
 #include "Sync.h"
 
-#include <algorithm>
+#include <parallel/algorithm>
 #include <cassert>
 #include <complex>
 #include <deque>
@@ -24,6 +24,8 @@ Sync::Sync(const myConfig_t &c) :
 				0 } {
 	current = std::make_shared<myBuffer_t>(config.sym_len);
 	next = std::make_shared<myBuffer_t>(config.sym_len);
+
+
 }
 
 Sync::~Sync() {

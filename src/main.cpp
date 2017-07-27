@@ -107,6 +107,7 @@ void rx() {
 }
 
 int main(int argc, char **argv) {
+//#define  TEST
 #ifdef TEST
 	testCorrelation();
 	testAlign();

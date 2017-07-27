@@ -28,19 +28,21 @@ DataSelector::DataSelector(const myConfig_t& c) :
 		auto without_tps = std::vector<int>();
 		std::set_difference(begin(tmp), end(tmp), begin(config.tps),
 				end(config.tps),
-				std::inserter(without_tps, begin(without_tps)));
+				inserter(without_tps, begin(without_tps)));
+
 		auto without_cpilots = std::vector<int>();
 
 		std::set_difference(begin(without_tps), end(without_tps),
 				begin(config.continual_pilots), end(config.continual_pilots),
-						std::inserter(without_cpilots, begin(without_cpilots)));
+				inserter(without_cpilots, begin(without_cpilots)));
 
 		auto without_spilots = std::vector<int>();
 
-		std::set_difference(begin(without_cpilots), end(without_cpilots),
+		std::set_difference(begin(without_cpilots),
+				end(without_cpilots),
 				begin(config.scattered_pilots[i]),
 				end(config.scattered_pilots[i]),
-						std::inserter(without_spilots, begin(without_spilots)));
+				inserter(without_spilots, begin(without_spilots)));
 
 		dataIdx[i] = without_spilots;
 	}

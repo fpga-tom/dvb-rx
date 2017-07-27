@@ -6,7 +6,8 @@
  */
 
 #include <IntegerFrequencyOffset.h>
-#include <algorithm>
+#include <parallel/algorithm>
+#include <parallel/numeric>
 #include <complex>
 #include <iterator>
 #include <vector>
@@ -30,12 +31,20 @@ int IntegerFrequencyOffset::update(myBuffer_t& in) {
 	for (auto i { low }; i <= hi; i++) {
 
 		auto base { config.zeros_left + i };
-		auto acc = myComplex_t { 0, 0 };
-		for (auto t : config.continual_pilots) {
-			auto arg0 = in[base + t];
-			auto arg1 = prev[base + t];
-			acc += arg0 * std::conj(arg1);
-		}
+		auto tmp = myBuffer_t(config.continual_pilots_count);
+		std::transform(begin(config.continual_pilots),
+				end(config.continual_pilots), begin(tmp), [&](auto t) {
+					auto arg0 = in[base + t];
+					auto arg1 = prev[base + t];
+					return arg0 * std::conj(arg1);
+				});
+		auto acc = std::accumulate(begin(tmp), end(tmp),
+				myComplex_t { 0, 0 });
+//		for (auto t : config.continual_pilots) {
+//			auto arg0 = in[base + t];
+//			auto arg1 = prev[base + t];
+//			acc += arg0 * std::conj(arg1);
+//		}
 		maxs[i + hi] = std::abs(acc);
 	}
 

@@ -3,9 +3,9 @@
 //
 // Code generated for Simulink model 'mydec1'.
 //
-// Model version                  : 1.7
+// Model version                  : 1.17
 // Simulink Coder version         : 8.12 (R2017a) 16-Feb-2017
-// C/C++ source code generated on : Tue Jul 25 20:41:36 2017
+// C/C++ source code generated on : Thu Jul 27 18:42:14 2017
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Intel->x86-64 (Linux 64)
@@ -55,22 +55,22 @@ typedef struct {
 typedef struct {
   creal_T Gain[6048];                  // '<Root>/Gain'
   real_T BitDeinterleaver[756];        // '<S2>/Bit Deinterleaver'
-  real_T Buffer1_CircBuff[36288];      // '<S2>/Buffer1'
+  real_T Buffer1_CircBuf[72576];       // '<S2>/Buffer1'
   real_T Buffer2_CircBuf[4536];        // '<S2>/Buffer2'
   real_T stateMetric[64];              // '<S5>/Viterbi Decoder'
+  real_T Buffer1[756];                 // '<S2>/Buffer1'
   real_T preDecodVect[3024];           // '<S5>/Viterbi Decoder'
   real_T Buffer2[2268];                // '<S2>/Buffer2'
-  real_T Buffer1[756];                 // '<S2>/Buffer1'
   real_T GeneralBlockDeinterleaver[36288];// '<S2>/General Block Deinterleaver'
   real_T Demodulator[36288];           // '<S2>/Demodulator'
   real_T GeneralBlockInterleaver[36288];// '<S2>/General Block Interleaver'
   int32_T BuffOff[12];                 // '<S7>/General Multiplexed Deinterleaver1' 
   int32_T BuffBgn[12];                 // '<S7>/General Multiplexed Deinterleaver1' 
   int32_T RegSel;                      // '<S7>/General Multiplexed Deinterleaver1' 
-  int32_T Buffer1_memIdx;              // '<S2>/Buffer1'
+  int32_T Buffer1_inBufPtrIdx;         // '<S2>/Buffer1'
+  int32_T Buffer1_outBufPtrIdx;        // '<S2>/Buffer1'
   int32_T Buffer2_inBufPtrIdx;         // '<S2>/Buffer2'
   int32_T Buffer2_outBufPtrIdx;        // '<S2>/Buffer2'
-  int32_T Buffer2_bufferLength;        // '<S2>/Buffer2'
   int32_T tbPtr;                       // '<S5>/Viterbi Decoder'
   uint32_T tbState[10048];             // '<S5>/Viterbi Decoder'
   uint32_T tbInput[10048];             // '<S5>/Viterbi Decoder'
@@ -82,7 +82,7 @@ typedef struct {
 
 // Constant parameters (auto storage)
 typedef struct {
-  // Expression: 0.03
+  // Expression: 0.13
   //  Referenced by: '<Root>/Constant'
 
   real_T Constant_Value;
@@ -148,17 +148,6 @@ typedef struct {
 // Real-time Model Data Structure
 struct tag_RTM {
   const char_T * volatile errorStatus;
-
-  //
-  //  Timing:
-  //  The following substructure contains information regarding
-  //  the timing information for the model.
-
-  struct {
-    struct {
-      uint8_T TID[3];
-    } TaskCounters;
-  } Timing;
 };
 
 #ifdef __cplusplus
@@ -189,7 +178,13 @@ class mydec1ModelClass {
   void initialize();
 
   // model step function
-  void step();
+  void step0();
+
+  // model step function
+  void step1();
+
+  // model step function
+  void step2();
 
   // Constructor
   mydec1ModelClass();
