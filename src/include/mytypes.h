@@ -8,9 +8,11 @@
 #ifndef MYTYPES_H_
 #define MYTYPES_H_
 
-#include <vector>
+#include <stddef.h>
+#include <bitset>
 #include <complex>
 #include <deque>
+#include <vector>
 
 
 typedef float myReal_t;
@@ -18,6 +20,7 @@ typedef std::complex<myReal_t> myComplex_t;
 typedef std::vector<myComplex_t> myBuffer_t;
 typedef std::vector<myReal_t> myBufferR_t;
 typedef std::deque<myComplex_t> myDelay_t;
+typedef std::bitset<6048> myBitset_t;
 
 typedef struct {
 	size_t fft_len;

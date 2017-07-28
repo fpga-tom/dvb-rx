@@ -1,3 +1,5 @@
+#include <test/DemapTest.h>
+
 #define UNITTEST_SYMBOL
 #include <test/DataSelectorTest.h>
 #include <config.h>
@@ -16,7 +18,7 @@
 
 
 
-const std::string cfile = "/opt/dvb/input/dvb_res.cfile";
+const std::string cfile = "/opt/dvb/input/dvb_res_small2.cfile";
 const std::string ofile = "/opt/dvb/output/";
 
 using namespace dvb;
@@ -100,6 +102,12 @@ void testDataSelector() {
 	dataSelectorTest.testDataSelector();
 }
 
+void testDemap() {
+	std::cout << __PRETTY_FUNCTION__ << std::endl;
+	auto demapTest = DemapTest { DVBT_CONFIG_1 };
+	demapTest.testDemap();
+}
+
 void rx() {
 	std::cout << __PRETTY_FUNCTION__ << std::endl;
 	auto rxTest = Rx { DVBT_CONFIG_1, cfile, ofile + "rx." };
@@ -119,6 +127,7 @@ int main(int argc, char **argv) {
 	testEqualizer();
 	testFto();
 	testDataSelector();
+	testDemap();
 #else
 	rx();
 #endif
