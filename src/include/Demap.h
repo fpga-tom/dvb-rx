@@ -12,17 +12,18 @@
 
 namespace dvb {
 
-const float DEMAP_X = 7;
-const float DEMAP_Y = 7;
-const int DEMAP_DEPTH = 6;
+const float DEMAP_X = 8;
+const float DEMAP_Y = 8;
+const int DEMAP_DEPTH = 2;
 
 class Demap {
+	FRIEND_TEST(DemapTest);
 	const myConfig_t config;
-	int demap(const myComplex_t&, int)
+	int demap(const myComplex_t&, int);
 public:
-	Demap(myConfig_t&);
+	Demap(const myConfig_t&);
 	virtual ~Demap();
-	std::vector<bool> update(const myBuffer_t&)
+	myBitset_t update(const myBuffer_t&);
 
 };
 

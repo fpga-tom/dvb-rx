@@ -6,19 +6,20 @@
  */
 
 #include <DataSelector.h>
+#include <Demap.h>
 #include <Equalizer.h>
 #include <EqualizerSpilots.h>
 #include <Fft.h>
 #include <FineTimingOffset.h>
 #include <IntegerFrequencyOffset.h>
 #include <Nco.h>
+#include <rtwtypes.h>
 #include <Rx.h>
 #include <Sync.h>
 #include <algorithm>
-#include <cstdio>
+#include <complex>
 #include <deque>
 #include <fstream>
-#include <iostream>
 #include <iterator>
 #include <vector>
 
@@ -205,6 +206,7 @@ void Rx::rx() {
 	auto eq = Equalizer { config };
 	auto eqs = EqualizerSpilots { config };
 	auto ds = DataSelector { config };
+	auto dem = Demap { config };
 	auto inFile = std::ifstream(cfile);
 	auto buf = myBuffer_t(config.sym_len);
 	auto c { 0 };
