@@ -1,3 +1,4 @@
+#include <test/DeinterleaverTest.h>
 #include <test/DemapTest.h>
 
 #define UNITTEST_SYMBOL
@@ -18,10 +19,14 @@
 
 
 
-const std::string cfile = "/opt/dvb/input/dvb_res_small2.cfile";
+const std::string cfile = "/opt/dvb/input/dvb_res_small.cfile";
 const std::string ofile = "/opt/dvb/output/";
 const std::string demap_input_file = "/opt/dvb/output/rx.0";
 const std::string demap_output_file = "/opt/dvb/output/demap.out";
+const std::string deint_input_file = "/opt/dvb/output/deint.in";
+const std::string deint_output_file = "/opt/dvb/output/deint.out";
+const std::string deint_input_file_bit = "/opt/dvb/output/deint.out";
+const std::string deint_output_file_bit = "/opt/dvb/output/deint2.out";
 
 using namespace dvb;
 
@@ -116,6 +121,18 @@ void testDemapUpdate() {
 	demapTest.testUpdate();
 }
 
+void testDeinterleaverSymbol() {
+	std::cout << __PRETTY_FUNCTION__ << std::endl;
+	auto deintTest = DeinterleaverTest { DVBT_CONFIG_1, deint_input_file, deint_output_file };
+	deintTest.testSymbol();
+}
+
+void testDeinterleaverBit() {
+	std::cout << __PRETTY_FUNCTION__ << std::endl;
+	auto deintTest = DeinterleaverTest { DVBT_CONFIG_1, deint_input_file_bit, deint_output_file_bit };
+	deintTest.testBit();
+}
+
 void rx() {
 	std::cout << __PRETTY_FUNCTION__ << std::endl;
 	auto rxTest = Rx { DVBT_CONFIG_1, cfile, ofile + "rx." };
@@ -137,6 +154,8 @@ int main(int argc, char **argv) {
 	testDataSelector();
 	testDemap();
 	testDemapUpdate();
+	testDeinterleaverSymbol();
+	testDeinterleaverBit();
 #else
 	rx();
 #endif

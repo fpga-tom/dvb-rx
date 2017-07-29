@@ -256,7 +256,7 @@ void Rx::rx() {
 					_out.size() * sizeof(myComplex_t));
 //			outFile1 << _deint;
 
-			for (auto it { 0 }; it < sizeof(rtObj.rtU.In1); it++) {
+			for (auto it { 0U }; it < sizeof(rtObj.rtU.In1); it++) {
 				rtObj.rtU.In1[it] = _deint[it];
 			}
 			rtObj.step();

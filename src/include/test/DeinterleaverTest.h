@@ -14,9 +14,13 @@ namespace dvb {
 
 class DeinterleaverTest {
 	const myConfig_t& config;
+	const std::string in;
+	const std::string out;
 public:
-	DeinterleaverTest(const myConfig_t&);
+	DeinterleaverTest(const myConfig_t&, const std::string&, const std::string&);
 	virtual ~DeinterleaverTest();
+	void testSymbol();
+	void testBit();
 };
 
 } /* namespace dvb */

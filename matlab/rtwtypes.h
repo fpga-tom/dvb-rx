@@ -1,11 +1,11 @@
 //
 // File: rtwtypes.h
 //
-// Code generated for Simulink model 'mydec3'.
+// Code generated for Simulink model 'myviterbi'.
 //
-// Model version                  : 1.8
+// Model version                  : 1.3
 // Simulink Coder version         : 8.12 (R2017a) 16-Feb-2017
-// C/C++ source code generated on : Fri Jul 28 21:40:16 2017
+// C/C++ source code generated on : Sat Jul 29 13:31:40 2017
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Intel->x86-64 (Linux 64)
