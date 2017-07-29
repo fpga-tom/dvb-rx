@@ -22,10 +22,13 @@ const int DEMAP_TEST_CONSTELLATION[] = {
 
 class DemapTest {
 	const myConfig_t config;
+	const std::string in;
+	const std::string out;
 public:
-	DemapTest(const myConfig_t&);
+	DemapTest(const myConfig_t&, const std::string&, const std::string&);
 	virtual ~DemapTest();
 	void testDemap();
+	void testUpdate();
 };
 
 } /* namespace dvb */

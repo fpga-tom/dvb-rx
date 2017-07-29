@@ -8,9 +8,10 @@
 #ifndef SRC_RX_H_
 #define SRC_RX_H_
 
-#include <mydec1.h>
 #include <mytypes.h>
-#include <array>
+#include <myviterbi.h>
+#include <deque>
+#include <iostream>
 #include <string>
 
 namespace dvb {
@@ -20,7 +21,7 @@ class Rx {
 	const std::string cfile;
 	const std::string ofile;
 
-	mydec1ModelClass rtObj;
+	myviterbiModelClass rtObj;
 	std::deque<bool> q0, q1, q2, q3, q4, q5, q6, q7, q8;
 	bool inSync;
 	int syncCounter;

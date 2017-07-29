@@ -5,7 +5,11 @@
  *      Author: tomas1
  */
 
-#include "Demap.h"
+#include <Demap.h>
+#include <bitset>
+#include <cmath>
+#include <complex>
+#include <cassert>
 
 namespace dvb {
 
@@ -36,7 +40,8 @@ int Demap::demap(const myComplex_t& complex, int depth) {
 }
 
 myBitset_t Demap::update(const myBuffer_t& complex) {
-	auto result = myBitset_t { };
+	assert(complex.size() == config.data_carrier_count);
+	auto result = myBitset_t ();
 	auto it { 0 };
 	for (auto c : complex) {
 		auto d = demap(c, 0);
@@ -45,6 +50,7 @@ myBitset_t Demap::update(const myBuffer_t& complex) {
 			d = d >> 1;
 		}
 	}
+	assert(result.size() == config.data_carrier_count * 6);
 	return result;
 }
 
