@@ -6,6 +6,7 @@
  */
 
 #include <DataSelector.h>
+#include <Deinterleaver.h>
 #include <Demap.h>
 #include <Equalizer.h>
 #include <EqualizerSpilots.h>
@@ -13,11 +14,9 @@
 #include <FineTimingOffset.h>
 #include <IntegerFrequencyOffset.h>
 #include <Nco.h>
-#include <rtwtypes.h>
 #include <Rx.h>
 #include <Sync.h>
 #include <algorithm>
-#include <complex>
 #include <deque>
 #include <fstream>
 #include <iterator>
@@ -42,12 +41,13 @@ Rx::Rx(const myConfig_t& c, const std::string& cf, const std::string& of) :
 Rx::~Rx() {
 }
 
+#if 0
 void Rx::rt_OneStep(std::ofstream& outFile, myBuffer_t& _out) {
-	static boolean_T OverrunFlags[3] = { 0, 0, 0 };
+	static boolean_T OverrunFlags[3] = {0, 0, 0};
 
-	static boolean_T eventFlags[3] = { 0, 0, 0 }; // Model has 3 rates
+	static boolean_T eventFlags[3] = {0, 0, 0}; // Model has 3 rates
 
-	static int_T taskCounter[3] = { 0, 0, 0 };
+	static int_T taskCounter[3] = {0, 0, 0};
 
 	int_T i;
 
@@ -119,15 +119,15 @@ void Rx::rt_OneStep(std::ofstream& outFile, myBuffer_t& _out) {
 
 			// Step the model for subrate "i"
 			switch (i) {
-			case 1:
+				case 1:
 				rtObj.step1();
 
 				// Get model outputs here
 				getOutputs(outFile);
 				break;
 
-			case 2:
-				for (auto it { 0 }; it < 6048; it++) {
+				case 2:
+				for (auto it {0}; it < 6048; it++) {
 					rtObj.rtU.decoderIn[it].re = real(_out[it]);
 					rtObj.rtU.decoderIn[it].im = imag(_out[it]);
 				}
@@ -137,7 +137,7 @@ void Rx::rt_OneStep(std::ofstream& outFile, myBuffer_t& _out) {
 //				getOutputs(outFile);
 				break;
 
-			default:
+				default:
 				break;
 			}
 
@@ -151,16 +151,17 @@ void Rx::rt_OneStep(std::ofstream& outFile, myBuffer_t& _out) {
 	// Restore FPU context here (if necessary)
 	// Enable interrupts here
 }
+#endif
 
 void Rx::getOutputs(std::ofstream& outFile1) {
 
-	auto buf = std::vector<unsigned char>(189);
-	std::copy(rtObj.rtY.decoderOut, rtObj.rtY.decoderOut + 189, begin(buf));
+//	auto buf = std::vector<unsigned char>(sizeof(rtObj.rtY.Out1));
+//	std::copy(rtObj.rtY.Out1, rtObj.rtY.Out1 + sizeof, begin(buf));
 
 //	std::cout << std::endl;
 	if (!inSync) {
-		for (auto it { 0 }; it < 189; it++) {
-			auto a = rtObj.rtY.decoderOut[it];
+		for (auto it { 0 }; it < sizeof(rtObj.rtY.Out1); it++) {
+			auto a = rtObj.rtY.Out1[it];
 //		printf("%X", a);
 			if (!inSync) {
 				inSync = q0.front() && q1.front() && q2.front() && q3.front()
@@ -191,8 +192,11 @@ void Rx::getOutputs(std::ofstream& outFile1) {
 
 	if (inSync) {
 		outFile1.write(
-				reinterpret_cast<const char*>(rtObj.rtY.decoderOut)
-						+ syncCounter, 189 - syncCounter);
+				reinterpret_cast<const char*>(&rtObj.rtY.Out1[syncCounter]),
+				sizeof(rtObj.rtY.Out1) - syncCounter);
+//		outFile1.write(
+//				reinterpret_cast<const char*>(rtObj.rtY.decoderOut)
+//				+ syncCounter, 189 - syncCounter);
 		syncCounter = 0;
 	}
 }
@@ -207,6 +211,7 @@ void Rx::rx() {
 	auto eqs = EqualizerSpilots { config };
 	auto ds = DataSelector { config };
 	auto dem = Demap { config };
+	auto deint = Deinterleaver { config };
 	auto inFile = std::ifstream(cfile);
 	auto buf = myBuffer_t(config.sym_len);
 	auto c { 0 };
@@ -234,6 +239,12 @@ void Rx::rx() {
 		auto _frame = ds.frameNum(_eq);
 		auto _eqs = eqs.update(_eq, _frame);
 		auto _ds = ds.update(_eqs, _frame);
+		auto _mul = myBuffer_t(config.data_carrier_count);
+		std::transform(begin(_ds), end(_ds), begin(_mul), [](auto a) {
+			return a * 0.7955f;
+		});
+		auto _dem = dem.update(_mul);
+		auto _deint = deint.update(_dem, _frame);
 		auto _out = _ds;
 
 		if (_frame == 0) {
@@ -243,9 +254,16 @@ void Rx::rx() {
 		if (frameZeroCount > 30) {
 			outFile.write(reinterpret_cast<char*>(_out.data()),
 					_out.size() * sizeof(myComplex_t));
-			for (auto l { 0 }; l < 48; l++) {
-				rt_OneStep(outFile1, _out);
+//			outFile1 << _deint;
+
+			for (auto it { 0 }; it < sizeof(rtObj.rtU.In1); it++) {
+				rtObj.rtU.In1[it] = _deint[it];
 			}
+			rtObj.step();
+			getOutputs(outFile1);
+//			for (auto l { 0 }; l < 48; l++) {
+//				rt_OneStep(outFile1, _out);
+//			}
 		}
 	}
 	outFile.close();

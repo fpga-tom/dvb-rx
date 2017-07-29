@@ -20,6 +20,8 @@
 
 const std::string cfile = "/opt/dvb/input/dvb_res_small2.cfile";
 const std::string ofile = "/opt/dvb/output/";
+const std::string demap_input_file = "/opt/dvb/output/rx.0";
+const std::string demap_output_file = "/opt/dvb/output/demap.out";
 
 using namespace dvb;
 
@@ -104,8 +106,14 @@ void testDataSelector() {
 
 void testDemap() {
 	std::cout << __PRETTY_FUNCTION__ << std::endl;
-	auto demapTest = DemapTest { DVBT_CONFIG_1 };
+	auto demapTest = DemapTest { DVBT_CONFIG_1, demap_input_file, demap_output_file };
 	demapTest.testDemap();
+}
+
+void testDemapUpdate() {
+	std::cout << __PRETTY_FUNCTION__ << std::endl;
+	auto demapTest = DemapTest { DVBT_CONFIG_1, demap_input_file, demap_output_file };
+	demapTest.testUpdate();
 }
 
 void rx() {
@@ -128,6 +136,7 @@ int main(int argc, char **argv) {
 	testFto();
 	testDataSelector();
 	testDemap();
+	testDemapUpdate();
 #else
 	rx();
 #endif

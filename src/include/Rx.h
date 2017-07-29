@@ -8,7 +8,7 @@
 #ifndef SRC_RX_H_
 #define SRC_RX_H_
 
-#include <mydec1.h>
+#include <mydec3.h>
 #include <mytypes.h>
 #include <array>
 #include <string>
@@ -20,7 +20,7 @@ class Rx {
 	const std::string cfile;
 	const std::string ofile;
 
-	mydec1ModelClass rtObj;
+	mydec3ModelClass rtObj;
 	std::deque<bool> q0, q1, q2, q3, q4, q5, q6, q7, q8;
 	bool inSync;
 	int syncCounter;
