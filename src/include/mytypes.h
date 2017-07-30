@@ -41,6 +41,8 @@ typedef struct {
 	size_t scattered_pilots_count;
 	std::vector<int> H;
 	std::vector<int> bit_table;
+	std::vector<std::vector<int>> nextStates;
+	std::vector<std::vector<int>> outputs;
 } myConfig_t;
 
 #ifndef UNITTEST_SYMBOL
