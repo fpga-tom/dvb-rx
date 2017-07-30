@@ -19,6 +19,7 @@ typedef float myReal_t;
 typedef std::complex<myReal_t> myComplex_t;
 typedef std::vector<myComplex_t> myBuffer_t;
 typedef std::vector<myReal_t> myBufferR_t;
+typedef std::vector<unsigned char> myBufferB_t;
 typedef std::deque<myComplex_t> myDelay_t;
 typedef std::bitset<36288> myBitset_t;
 
