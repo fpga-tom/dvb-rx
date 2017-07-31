@@ -14,6 +14,7 @@
 #include <deque>
 #include <vector>
 
+const int bitCount  = 36288;
 
 typedef float myReal_t;
 typedef std::complex<myReal_t> myComplex_t;
@@ -21,7 +22,7 @@ typedef std::vector<myComplex_t> myBuffer_t;
 typedef std::vector<myReal_t> myBufferR_t;
 typedef std::vector<unsigned char> myBufferB_t;
 typedef std::deque<myComplex_t> myDelay_t;
-typedef std::bitset<36288> myBitset_t;
+typedef std::bitset<bitCount> myBitset_t;
 
 typedef struct {
 	size_t fft_len;
@@ -44,6 +45,7 @@ typedef struct {
 	std::vector<int> bit_table;
 	std::vector<std::vector<int>> nextStates;
 	std::vector<std::vector<int>> outputs;
+	size_t statesCount;
 } myConfig_t;
 
 #ifndef UNITTEST_SYMBOL

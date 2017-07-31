@@ -17,9 +17,14 @@ namespace dvb {
 class ViterbiDecoder {
 	const myConfig_t& config;
 	int state;
-	std::vector<int> traceback;
-	std::shared_ptr<std::vector<int>> prev;
+	std::vector<int> tracebackBuf;
+	std::vector<bool> tracebackBit;
+	int traceback;
 	std::shared_ptr<std::vector<int>> current;
+	std::shared_ptr<std::vector<int>> next;
+
+	// helper methods
+	int hamming(unsigned char, unsigned char);
 public:
 	ViterbiDecoder(const myConfig_t&, int);
 	virtual ~ViterbiDecoder();
