@@ -10,23 +10,15 @@
 
 #include <mytypes.h>
 #include <memory>
-#include <vector>
 
 namespace dvb {
 
 class ViterbiDecoder {
 	const myConfig_t& config;
-	int state;
-	std::vector<int> tracebackBuf;
-	std::vector<bool> tracebackBit;
-	int traceback;
-	std::shared_ptr<std::vector<int>> current;
-	std::shared_ptr<std::vector<int>> next;
-
-	// helper methods
-	int hamming(unsigned char, unsigned char);
-public:
-	ViterbiDecoder(const myConfig_t&, int);
+	int parentRead[2];
+	int parentWrite[2];
+	public:
+	ViterbiDecoder(const myConfig_t&);
 	virtual ~ViterbiDecoder();
 	myBufferB_t update(myBitset_t&);
 

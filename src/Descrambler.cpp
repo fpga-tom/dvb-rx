@@ -1,23 +1,20 @@
 /*
- * ViterbiDecoder.cpp
+ * Descrambler.cpp
  *
- *  Created on: Jul 30, 2017
+ *  Created on: Aug 1, 2017
  *      Author: tomas1
  */
 
+#include <Descrambler.h>
 #include <unistd.h>
-#include <ViterbiDecoder.h>
-#include <algorithm>
-#include <bitset>
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
-#include <iterator>
 #include <vector>
 
 namespace dvb {
 
-ViterbiDecoder::ViterbiDecoder(const myConfig_t&c) :
+Descrambler::Descrambler(const myConfig_t& c) :
 		config { c } {
 	pipe(parentRead);
 	pipe(parentWrite);
@@ -32,34 +29,32 @@ ViterbiDecoder::ViterbiDecoder(const myConfig_t&c) :
 		dup(parentWrite[0]);
 		close(1);
 		dup(parentRead[1]);
-		execlp("/opt/viterbi/Debug/viterbi", "/opt/viterbi/Debug/viterbi",
-				nullptr);
+		execlp("/opt/reedsolomon/Debug/reedsolomon",
+				"/opt/reedsolomon/Debug/reedsolomon", nullptr);
 		perror("execlp");
 		exit(1);
 	} else {
 		close(parentRead[1]);
 		close(parentWrite[0]);
 	}
+}
 
-	}
-
-ViterbiDecoder::~ViterbiDecoder() {
+Descrambler::~Descrambler() {
 	close(parentWrite[1]);
 	close(parentRead[0]);
 }
 
-
-myBufferB_t ViterbiDecoder::update(myBitset_t& bitset) {
-	auto buf = std::vector<char>(4536);
-	std::fill(begin(buf), end(buf), 0);
-	for (auto i { 0 }; i < bitCount; i++) {
-		buf[i / 8] |= bitset[i] << (i % 8);
-	}
+myBufferB_t Descrambler::update(const myBufferB_t& buf) {
+//	assert(buf.size() == 1632);
+	auto result = myBufferB_t(1504);
 	if (write(parentWrite[1], buf.data(), buf.size()) != buf.size()) {
 		perror("write");
 	}
+	std::cerr << buf.size() << std::endl;
+	if (buf.size() != 3024) {
+		return result;
+	}
 
-	auto result = myBufferB_t(3024);
 	auto count = 0;
 	do {
 		count += read(parentRead[0], result.data() + count,
@@ -67,6 +62,7 @@ myBufferB_t ViterbiDecoder::update(myBitset_t& bitset) {
 	} while (count != result.size());
 
 	return result;
+
 }
 
 } /* namespace dvb */
