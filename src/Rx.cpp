@@ -41,7 +41,6 @@ Rx::Rx(const myConfig_t& c, const std::string& cf, const std::string& of) :
 Rx::~Rx() {
 }
 
-
 void Rx::getOutputs(std::ofstream& outFile1, myBufferB_t& out) {
 
 //	std::cout << std::endl;
@@ -77,8 +76,7 @@ void Rx::getOutputs(std::ofstream& outFile1, myBufferB_t& out) {
 	}
 
 	if (inSync) {
-		outFile1.write(
-				reinterpret_cast<const char*>(out.data() + syncCounter),
+		outFile1.write(reinterpret_cast<const char*>(out.data() + syncCounter),
 				out.size() - syncCounter);
 //		outFile1.write(
 //				reinterpret_cast<const char*>(rtObj.rtY.decoderOut)
@@ -115,9 +113,12 @@ void Rx::rx() {
 
 	auto frameZeroCount { 0 };
 
+	auto readBytes { 0 };
 	while (inFile.read(reinterpret_cast<char*>(buf.data()),
 			buf.size() * sizeof(myComplex_t))) {
 
+		readBytes += buf.size() * sizeof(myComplex_t);
+//		std::cout << readBytes << std::endl;
 		auto _nco = nco.update(buf, _ifo, f);
 		auto [_sync, _f] = sync.update(_nco, _fto);
 		f = _f;
@@ -147,13 +148,28 @@ void Rx::rx() {
 
 			getOutputs(outFile1, _viterbi);
 			if (inSync) {
+				static auto sync2 { 0 };
 				auto sbuf = myBufferB_t(3024 - syncCounter);
 				std::copy(begin(_viterbi) + syncCounter, end(_viterbi),
 						begin(sbuf));
-				auto result = descrambler.update(sbuf);
-				if (syncCounter == 0) {
-					outFile2.write(reinterpret_cast<const char*>(result.data()),
-							result.size());
+				static std::deque<char> queue;
+				for (auto ch : sbuf) {
+					queue.push_back(ch);
+				}
+				if (queue.size() >= 1632) {
+					auto sbuf1 = myBufferB_t(1632);
+					for (auto qi { 0 }; qi < 1632; qi++) {
+						sbuf1[qi] = queue.front();
+						queue.pop_front();
+					}
+					auto result = descrambler.update(sbuf1);
+					if (syncCounter == 0) {
+						if (sync2++ > 2) {
+							outFile2.write(
+									reinterpret_cast<const char*>(result.data()),
+									result.size());
+						}
+					}
 				}
 				syncCounter = 0;
 			}

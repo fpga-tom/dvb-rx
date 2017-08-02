@@ -11,6 +11,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <vector>
+#include <cassert>
 
 namespace dvb {
 
@@ -45,20 +46,21 @@ Descrambler::~Descrambler() {
 }
 
 myBufferB_t Descrambler::update(const myBufferB_t& buf) {
-//	assert(buf.size() == 1632);
-	auto result = myBufferB_t(1504);
+	assert(buf.size() == 1632);
 	if (write(parentWrite[1], buf.data(), buf.size()) != buf.size()) {
 		perror("write");
 	}
-	std::cerr << buf.size() << std::endl;
-	if (buf.size() != 3024) {
-		return result;
-	}
 
+
+	auto result = myBufferB_t(1504);
 	auto count = 0;
 	do {
-		count += read(parentRead[0], result.data() + count,
+		auto r = read(parentRead[0], result.data() + count,
 				result.size() - count);
+		if (r <= 0) {
+			perror("deinterleaver read");
+		}
+		count += r;
 	} while (count != result.size());
 
 	return result;
