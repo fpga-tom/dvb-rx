@@ -9,7 +9,6 @@
 #define SRC_RX_H_
 
 #include <mytypes.h>
-#include <myviterbi.h>
 #include <deque>
 #include <iostream>
 #include <string>
@@ -21,12 +20,10 @@ class Rx {
 	const std::string cfile;
 	const std::string ofile;
 
-	myviterbiModelClass rtObj;
 	std::deque<bool> q0, q1, q2, q3, q4, q5, q6, q7, q8;
 	bool inSync;
 	int syncCounter;
-	void rt_OneStep(std::ofstream&, myBuffer_t&);
-	void getOutputs(std::ofstream&);
+	void getOutputs(std::ofstream&, myBufferB_t&);
 
 public:
 	Rx(const myConfig_t&, const std::string&, const std::string&);

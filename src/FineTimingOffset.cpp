@@ -61,7 +61,7 @@ myReal_t FineTimingOffset::update(const myBuffer_t& in) {
 	for (auto a : y) {
 		acc += a;
 	}
-	return config.continual_pilots_count * std::arg(acc) / 2.0 / M_PI;
+	return (config.continual_pilots_count - 1) * std::arg(acc) / 2.0 / M_PI;
 //	auto z = myBuffer_t(config.fft_len);
 //	std::fill(begin(z), end(z), 0);
 //	auto it = begin(in);

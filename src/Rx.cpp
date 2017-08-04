@@ -8,6 +8,7 @@
 #include <DataSelector.h>
 #include <Deinterleaver.h>
 #include <Demap.h>
+#include <Descrambler.h>
 #include <Equalizer.h>
 #include <EqualizerSpilots.h>
 #include <Fft.h>
@@ -16,8 +17,8 @@
 #include <Nco.h>
 #include <Rx.h>
 #include <Sync.h>
+#include <ViterbiDecoder.h>
 #include <algorithm>
-#include <deque>
 #include <fstream>
 #include <iterator>
 #include <vector>
@@ -25,8 +26,7 @@
 namespace dvb {
 
 Rx::Rx(const myConfig_t& c, const std::string& cf, const std::string& of) :
-		config { c }, cfile { cf }, ofile { of }, inSync { 0 }, syncCounter { 0 } {
-	rtObj.initialize();
+		config { c }, cfile { cf }, ofile { of }, inSync { 0 }, syncCounter { -1 } {
 
 	q0 = std::deque<bool>(204 * 8);
 	q1 = std::deque<bool>(204 * 7);
@@ -41,127 +41,12 @@ Rx::Rx(const myConfig_t& c, const std::string& cf, const std::string& of) :
 Rx::~Rx() {
 }
 
-#if 0
-void Rx::rt_OneStep(std::ofstream& outFile, myBuffer_t& _out) {
-	static boolean_T OverrunFlags[3] = {0, 0, 0};
-
-	static boolean_T eventFlags[3] = {0, 0, 0}; // Model has 3 rates
-
-	static int_T taskCounter[3] = {0, 0, 0};
-
-	int_T i;
-
-	// Disable interrupts here
-
-	// Check base rate for overrun
-	if (OverrunFlags[0]) {
-		rtmSetErrorStatus(rtObj.getRTM(), "Overrun");
-		return;
-	}
-
-	OverrunFlags[0] = true;
-
-	// Save FPU context here (if necessary)
-	// Re-enable timer or interrupt here
-
-	//
-	//  For a bare-board target (i.e., no operating system), the
-	//  following code checks whether any subrate overruns,
-	//  and also sets the rates that need to run this time step.
-
-	for (i = 1; i < 3; i++) {
-		if (taskCounter[i] == 0) {
-			if (eventFlags[i]) {
-				OverrunFlags[0] = false;
-				OverrunFlags[i] = true;
-
-				// Sampling too fast
-				rtmSetErrorStatus(rtObj.getRTM(), "Overrun");
-				return;
-			}
-
-			eventFlags[i] = true;
-		}
-	}
-
-	taskCounter[1]++;
-	if (taskCounter[1] == 3) {
-		taskCounter[1] = 0;
-	}
-
-	taskCounter[2]++;
-	if (taskCounter[2] == 48) {
-		taskCounter[2] = 0;
-	}
-
-	// Set model inputs associated with base rate here
-
-	// Step the model for base rate
-	rtObj.step0();
-
-	// Get model outputs here
-//	getOutputs(outFile);
-
-	// Indicate task for base rate complete
-	OverrunFlags[0] = false;
-
-	// Step the model for any subrate
-	for (i = 1; i < 3; i++) {
-		// If task "i" is running, don't run any lower priority task
-		if (OverrunFlags[i]) {
-			return;
-		}
-
-		if (eventFlags[i]) {
-			OverrunFlags[i] = true;
-
-			// Set model inputs associated with subrates here
-
-			// Step the model for subrate "i"
-			switch (i) {
-				case 1:
-				rtObj.step1();
-
-				// Get model outputs here
-				getOutputs(outFile);
-				break;
-
-				case 2:
-				for (auto it {0}; it < 6048; it++) {
-					rtObj.rtU.decoderIn[it].re = real(_out[it]);
-					rtObj.rtU.decoderIn[it].im = imag(_out[it]);
-				}
-				rtObj.step2();
-
-				// Get model outputs here
-//				getOutputs(outFile);
-				break;
-
-				default:
-				break;
-			}
-
-			// Indicate task complete for sample time "i"
-			OverrunFlags[i] = false;
-			eventFlags[i] = false;
-		}
-	}
-
-	// Disable interrupts here
-	// Restore FPU context here (if necessary)
-	// Enable interrupts here
-}
-#endif
-
-void Rx::getOutputs(std::ofstream& outFile1) {
-
-//	auto buf = std::vector<unsigned char>(sizeof(rtObj.rtY.Out1));
-//	std::copy(rtObj.rtY.Out1, rtObj.rtY.Out1 + sizeof, begin(buf));
+void Rx::getOutputs(std::ofstream& outFile1, myBufferB_t& out) {
 
 //	std::cout << std::endl;
 	if (!inSync) {
-		for (auto it { 0 }; it < sizeof(rtObj.rtY.Out1); it++) {
-			auto a = rtObj.rtY.Out1[it];
+		for (auto it { 0 }; it < out.size(); it++) {
+			auto a = out[it];
 //		printf("%X", a);
 			if (!inSync) {
 				inSync = q0.front() && q1.front() && q2.front() && q3.front()
@@ -191,13 +76,12 @@ void Rx::getOutputs(std::ofstream& outFile1) {
 	}
 
 	if (inSync) {
-		outFile1.write(
-				reinterpret_cast<const char*>(&rtObj.rtY.Out1[syncCounter]),
-				sizeof(rtObj.rtY.Out1) - syncCounter);
+		outFile1.write(reinterpret_cast<const char*>(out.data() + syncCounter),
+				out.size() - syncCounter);
 //		outFile1.write(
 //				reinterpret_cast<const char*>(rtObj.rtY.decoderOut)
 //				+ syncCounter, 189 - syncCounter);
-		syncCounter = 0;
+//		syncCounter = 0;
 	}
 }
 
@@ -212,6 +96,8 @@ void Rx::rx() {
 	auto ds = DataSelector { config };
 	auto dem = Demap { config };
 	auto deint = Deinterleaver { config };
+	auto viterbi = ViterbiDecoder { config };
+	auto descrambler = Descrambler { config };
 	auto inFile = std::ifstream(cfile);
 	auto buf = myBuffer_t(config.sym_len);
 	auto c { 0 };
@@ -223,12 +109,16 @@ void Rx::rx() {
 			std::ofstream { ofile + std::to_string(c++), std::ios::binary };
 
 	auto outFile1 = std::ofstream { ofile + "viterbi", std::ios::binary };
+	auto outFile2 = std::ofstream { ofile + "ts", std::ios::binary };
 
 	auto frameZeroCount { 0 };
 
+	auto readBytes { 0 };
 	while (inFile.read(reinterpret_cast<char*>(buf.data()),
 			buf.size() * sizeof(myComplex_t))) {
 
+		readBytes += buf.size() * sizeof(myComplex_t);
+//		std::cout << readBytes << std::endl;
 		auto _nco = nco.update(buf, _ifo, f);
 		auto [_sync, _f] = sync.update(_nco, _fto);
 		f = _f;
@@ -245,6 +135,7 @@ void Rx::rx() {
 		});
 		auto _dem = dem.update(_mul);
 		auto _deint = deint.update(_dem, _frame);
+		auto _viterbi = viterbi.update(_deint);
 		auto _out = _ds;
 
 		if (_frame == 0) {
@@ -254,16 +145,34 @@ void Rx::rx() {
 		if (frameZeroCount > 30) {
 			outFile.write(reinterpret_cast<char*>(_out.data()),
 					_out.size() * sizeof(myComplex_t));
-//			outFile1 << _deint;
 
-			for (auto it { 0U }; it < sizeof(rtObj.rtU.In1); it++) {
-				rtObj.rtU.In1[it] = _deint[it];
+			getOutputs(outFile1, _viterbi);
+			if (inSync) {
+				static auto sync2 { 0 };
+				auto sbuf = myBufferB_t(3024 - syncCounter);
+				std::copy(begin(_viterbi) + syncCounter, end(_viterbi),
+						begin(sbuf));
+				static std::deque<char> queue;
+				for (auto ch : sbuf) {
+					queue.push_back(ch);
+				}
+				if (queue.size() >= 1632) {
+					auto sbuf1 = myBufferB_t(1632);
+					for (auto qi { 0 }; qi < 1632; qi++) {
+						sbuf1[qi] = queue.front();
+						queue.pop_front();
+					}
+					auto result = descrambler.update(sbuf1);
+					if (syncCounter == 0) {
+						if (sync2++ > 2) {
+							outFile2.write(
+									reinterpret_cast<const char*>(result.data()),
+									result.size());
+						}
+					}
+				}
+				syncCounter = 0;
 			}
-			rtObj.step();
-			getOutputs(outFile1);
-//			for (auto l { 0 }; l < 48; l++) {
-//				rt_OneStep(outFile1, _out);
-//			}
 		}
 	}
 	outFile.close();
