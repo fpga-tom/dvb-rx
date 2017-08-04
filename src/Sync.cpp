@@ -5,14 +5,15 @@
  *      Author: tomas1
  */
 
-#include "Sync.h"
-
-#include <parallel/algorithm>
+#include <stddef.h>
+#include <Sync.h>
+#include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <complex>
 #include <deque>
-#include <iostream>
 #include <iterator>
+#include <tuple>
 #include <vector>
 
 namespace dvb {

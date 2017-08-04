@@ -19,7 +19,7 @@
 
 
 
-const std::string cfile = "/opt/dvb/input/dvb_res_small2.cfile";
+const std::string cfile = "/opt/dvb/input/dvb_res.cfile";
 const std::string ofile = "/opt/dvb/output/";
 const std::string demap_input_file = "/opt/dvb/output/rx.0";
 const std::string demap_output_file = "/opt/dvb/output/demap.out";
