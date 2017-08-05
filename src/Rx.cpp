@@ -116,18 +116,20 @@ void Rx::rx() {
 
 	auto frameZeroCount { 0 };
 	auto _sro { 0.f };
+	auto _rfo { 0.f };
 	auto readBytes { 0 };
 	while (inFile.read(reinterpret_cast<char*>(buf.data()),
 			buf.size() * sizeof(myComplex_t))) {
 
 		readBytes += buf.size() * sizeof(myComplex_t);
 //		std::cout << readBytes << std::endl;
-		auto _nco = nco.update(buf, _ifo, f);
+		auto _nco = nco.update(buf, _ifo, f + _rfo);
 		auto __sro = sro.update(_nco, _sro);
 		auto [_sync, _f] = sync.update(__sro, _fto);
 		f = _f;
 		auto _fft = fft.update(_sync);
 		_sro = sro.sro(_fft);
+		_rfo = sro.rfo(_fft);
 		_ifo = ifo.update(_fft);
 		auto [_eq, _cpilots] = eq.update(_fft);
 		_fto = fto.update(_cpilots);

@@ -19,6 +19,7 @@ class Equalizer {
 	FRIEND_TEST(FineTimingOffsetTest);
 	FRIEND_TEST(DataSelectorTest);
 	FRIEND_TEST(SamplingFrequencyOffsetTest);
+	FRIEND_TEST(ResidualFrequencyTest);
 
 	const myConfig_t config;
 	// inverse fft variables

@@ -19,12 +19,14 @@
 namespace dvb {
 
 SamplingFrequencyOffset::SamplingFrequencyOffset(const myConfig_t& c) :
-		config { c }, prev(c.continual_pilots_count), pilotsSquareSum { 0.f }, delayA(
-				SRO_N), delayB(SRO_N), integral { 0.f } {
+		config { c }, prev(c.continual_pilots_count), prevrfo(
+				c.continual_pilots_count), pilotsSquareSum { 0.f }, delayA(
+				SRO_N), delayB(SRO_N), integral { 0.f }, integral_rfo { 0.f } {
 	auto tmp = myBufferR_t(config.continual_pilots_count);
 	std::transform(begin(config.continual_pilots), end(config.continual_pilots),
 			begin(tmp), [&](auto a) {
-				return a*a;
+				auto t = a + config.zeros_left;
+				return t*t;
 			});
 	pilotsSquareSum = std::accumulate(begin(tmp), end(tmp), myReal_t { 0.f })
 			* (2 * M_PI * (config.sym_len) / config.fft_len);
@@ -45,7 +47,7 @@ myReal_t SamplingFrequencyOffset::sro(const myBuffer_t& b) {
 	auto it = begin(config.continual_pilots);
 	std::transform(begin(complex), end(complex), begin(prev), begin(tmp),
 			[&](auto a, auto b) {
-				return std::arg(a*std::conj(b)) * (*it++);
+				return std::arg(a*std::conj(b)) *( (*it++) + config.zeros_left);
 			});
 	auto result = std::accumulate(begin(tmp), end(tmp), myReal_t { 0 })
 			* pilotsSquareSum;
@@ -54,6 +56,25 @@ myReal_t SamplingFrequencyOffset::sro(const myBuffer_t& b) {
 	auto proportional = result * SRO_P_GAIN;
 	integral += result * SRO_I_GAIN;
 	return integral + proportional;
+}
+
+myReal_t SamplingFrequencyOffset::rfo(const myBuffer_t& b) {
+	assert(b.size() == config.fft_len);
+	auto complex = cpilots(b);
+	assert(complex.size() == config.continual_pilots_count);
+	auto tmp = myBufferR_t(config.continual_pilots_count);
+	std::transform(begin(complex), end(complex), begin(prevrfo), begin(tmp),
+			[&](auto a, auto b) {
+				return std::arg(a*std::conj(b));
+			});
+	auto result = std::accumulate(begin(tmp), end(tmp), myReal_t { 0 })
+			/ (2 * M_PI * (config.sym_len) / config.fft_len)
+			/ config.continual_pilots_count;
+
+	std::copy(begin(complex), end(complex), begin(prevrfo));
+	auto proportional = result * SRO_P_GAIN_RFO;
+	integral_rfo += result * SRO_I_GAIN_RFO;
+	return integral_rfo + proportional;
 }
 
 myBuffer_t SamplingFrequencyOffset::cpilots(const myBuffer_t& complex) {
