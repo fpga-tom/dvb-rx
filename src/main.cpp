@@ -1,5 +1,6 @@
 #include <test/DeinterleaverTest.h>
 #include <test/DemapTest.h>
+#include <test/SamplingFrequencyOffsetTest.h>
 
 #define UNITTEST_SYMBOL
 #include <test/DataSelectorTest.h>
@@ -133,6 +134,13 @@ void testDeinterleaverBit() {
 	deintTest.testBit();
 }
 
+void testSro() {
+	std::cout << __PRETTY_FUNCTION__ << std::endl;
+	auto sroTest = SamplingFrequencyOffsetTest { DVBT_CONFIG_1, cfile, ofile
+			+ "sro." };
+	sroTest.testSRO();
+}
+
 void rx() {
 	std::cout << __PRETTY_FUNCTION__ << std::endl;
 	auto rxTest = Rx { DVBT_CONFIG_1, cfile, ofile + "rx." };
@@ -140,7 +148,7 @@ void rx() {
 }
 
 int main(int argc, char **argv) {
-//#define  TEST
+//#define  TESTs
 #ifdef TEST
 	testCorrelation();
 	testAlign();
@@ -156,6 +164,7 @@ int main(int argc, char **argv) {
 	testDemapUpdate();
 	testDeinterleaverSymbol();
 	testDeinterleaverBit();
+	testSro();
 #else
 	rx();
 	std::cout << "Rx done" << std::endl;
