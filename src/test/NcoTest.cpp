@@ -7,8 +7,8 @@
 
 #include <Fft.h>
 #include <IntegerFrequencyOffset.h>
-#include <mytypes.h>
 #include <Nco.h>
+#include <SamplingFrequencyOffset.h>
 #include <Sync.h>
 #include <test/NcoTest.h>
 #include <fstream>
@@ -43,7 +43,7 @@ void NcoTest::testNco() {
 	auto _fto { 0.f };
 	while (inFile.read(reinterpret_cast<char*>(buf.data()),
 			buf.size() * sizeof(myComplex_t))) {
-		auto _nco = nco.update(buf, _ifo, f);
+		auto _nco = nco.update(buf, _ifo, f, 0);
 		auto [_sync, _f] = sync.update(_nco, _fto);
 		f = _f;
 		auto _fft = fft.update(_nco);
@@ -60,6 +60,7 @@ void NcoTest::testNcoFractional() {
 	auto sync = Sync { config };
 	auto fft = Fft { config };
 	auto ifo = IntegerFrequencyOffset { config };
+	auto sro = SamplingFrequencyOffset { config };
 	auto inFile = std::ifstream(cfile);
 	auto buf = myBuffer_t(config.sym_len);
 	auto c { 0 };
@@ -69,13 +70,18 @@ void NcoTest::testNcoFractional() {
 	auto _ifo { 0.f };
 	auto f { 0.f };
 	auto _fto { 0.f };
+	auto _sro { 0.f };
+	auto _rfo { 0.f };
 	while (inFile.read(reinterpret_cast<char*>(buf.data()),
 			buf.size() * sizeof(myComplex_t))) {
 
-		auto _nco = nco.update(buf, _ifo, f);
-		auto [_sync, _f] = sync.update(_nco, _fto);
+		auto _nco = nco.update(buf, _ifo, f, _rfo);
+		auto __sro = sro.update(_nco, _sro);
+		auto [_sync, _f] = sync.update(__sro, _fto);
 		f = _f;
 		auto _fft = fft.update(_nco);
+		_sro = sro.sro(_fft);
+		_rfo = sro.rfo(_fft);
 		auto _out = ifo.update(_fft);
 		_ifo = _out;
 

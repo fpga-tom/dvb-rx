@@ -51,8 +51,7 @@ void DataSelectorTest::testDataSelector() {
 	while (inFile.read(reinterpret_cast<char*>(buf.data()),
 			buf.size() * sizeof(myComplex_t))) {
 
-		auto _nco = nco.update(buf, _ifo, f + _rfo);
-
+		auto _nco = nco.update(buf, _ifo, f, _rfo);
 		auto __sro = sro.update(_nco, _sro);
 		auto [_sync, _f] = sync.update(__sro, _fto);
 		f = _f;

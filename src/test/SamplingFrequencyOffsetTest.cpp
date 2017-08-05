@@ -47,18 +47,20 @@ void SamplingFrequencyOffsetTest::testSRO() {
 	auto _fto { 0.f };
 	auto f { 0.f };
 	auto _sro { 0.f };
+	auto _rfo { 0.f };
 	auto outFile =
 			std::ofstream { ofile + std::to_string(c++), std::ios::binary };
 	while (inFile.read(reinterpret_cast<char*>(buf.data()),
 			buf.size() * sizeof(myComplex_t))) {
 
-		auto _nco = nco.update(buf, _ifo, f);
+		auto _nco = nco.update(buf, _ifo, f, _rfo);
 
 		auto __sro = sro.update(_nco, _sro);
 		auto [_sync, _f] = sync.update(__sro, _fto);
 		f = _f;
 		auto _fft = fft.update(_sync);
 		_sro = sro.sro(_fft);
+		_rfo = sro.rfo(_fft);
 		_ifo = ifo.update(_fft);
 		auto _cpilots = eq.selCpilots(_fft);
 		_fto = fto.update(_cpilots);

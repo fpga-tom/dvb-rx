@@ -99,25 +99,30 @@ myBuffer_t Sync::align(const myBuffer_t& in, size_t peak) {
 std::tuple<myBuffer_t, myReal_t> Sync::update(const myBuffer_t& in,
 		const myReal_t fineTiming) {
 
+
+
 	auto b = correlate(in, delay, accDelay, acc);
 	if (currentLock < lockCount + 10) {
 		peak = findPeak(b);
 		integral = peak;
 		currentLock++;
 	} else {
-		auto proportional = SYNC_P_GAIN * -fineTiming;
-		integral += SYNC_I_GAIN * -fineTiming;
+		auto ft = -fineTiming;
+		auto proportional = SYNC_P_GAIN * ft;
+		integral += SYNC_I_GAIN * ft;
 		peak = proportional + integral;
 	}
 	auto freq = std::arg(b[peak]) / 2.0 / M_PI / config.fft_len
 			* config.sample_rate;
 	auto result = align(in, peak);
+
 //	auto f = peak - std::floor(peak);
 //	auto tmp = myBuffer_t(config.sym_len);
 //	std::transform(begin(result), end(result) - 1, begin(result) + 1,
 //			begin(tmp), [&](auto a, auto b) {
 //				return f * b + (1-f) * a;
 //			});
+
 	return {result, freq};
 }
 }

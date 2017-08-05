@@ -49,7 +49,7 @@ myReal_t SamplingFrequencyOffset::sro(const myBuffer_t& b) {
 			[&](auto a, auto b) {
 				return std::arg(a*std::conj(b)) *( (*it++) + config.zeros_left);
 			});
-	auto result = std::accumulate(begin(tmp), end(tmp), myReal_t { 0 })
+	auto result = std::accumulate(begin(tmp), end(tmp), myReal_t { 0.f })
 			* pilotsSquareSum;
 
 	std::copy(begin(complex), end(complex), begin(prev));
@@ -67,7 +67,7 @@ myReal_t SamplingFrequencyOffset::rfo(const myBuffer_t& b) {
 			[&](auto a, auto b) {
 				return std::arg(a*std::conj(b));
 			});
-	auto result = std::accumulate(begin(tmp), end(tmp), myReal_t { 0 })
+	auto result = std::accumulate(begin(tmp), end(tmp), myReal_t { 0.f })
 			/ (2 * M_PI * (config.sym_len) / config.fft_len)
 			/ config.continual_pilots_count;
 
@@ -94,7 +94,7 @@ myReal_t SamplingFrequencyOffset::binom(myReal_t n, myReal_t k) {
 
 myBufferR_t SamplingFrequencyOffset::coeff(const myReal_t d) {
 //	std::cout << d << std::endl;
-	assert(std::abs(d) < .5f);
+	assert(std::abs(d) < 1.5f);
 	auto count = SRO_N + 1;
 	auto range = myBufferI_t(count);
 	auto result = myBufferR_t(count);

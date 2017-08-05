@@ -28,12 +28,12 @@ class Nco {
 	myReal_t integral;
 
 	// helper methods
-	auto correction(myReal_t&, myReal_t&);
+	auto correction(myReal_t&, myReal_t&, myReal_t&);
 	auto freqShift(myBuffer_t&, myReal_t&);
 public:
 	Nco(const myConfig_t&);
 	virtual ~Nco();
-	myBuffer_t update(myBuffer_t&, myReal_t, myReal_t);
+	myBuffer_t update(myBuffer_t&, myReal_t, myReal_t, myReal_t);
 };
 
 }
