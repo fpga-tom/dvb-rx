@@ -9,6 +9,7 @@
 #include <Deinterleaver.h>
 #include <Demap.h>
 #include <Descrambler.h>
+#include <ext/type_traits.h>
 #include <Equalizer.h>
 #include <EqualizerSpilots.h>
 #include <Fft.h>
@@ -16,6 +17,7 @@
 #include <IntegerFrequencyOffset.h>
 #include <Nco.h>
 #include <Rx.h>
+#include <SamplingFrequencyOffset.h>
 #include <Sync.h>
 #include <ViterbiDecoder.h>
 #include <algorithm>
@@ -88,6 +90,7 @@ void Rx::getOutputs(std::ofstream& outFile1, myBufferB_t& out) {
 void Rx::rx() {
 	auto sync = Sync { config };
 	auto nco = Nco { config };
+	auto sro = SamplingFrequencyOffset { config };
 	auto fft = Fft { config };
 	auto ifo = IntegerFrequencyOffset { config };
 	auto fto = FineTimingOffset { config };
@@ -112,7 +115,7 @@ void Rx::rx() {
 	auto outFile2 = std::ofstream { ofile + "ts", std::ios::binary };
 
 	auto frameZeroCount { 0 };
-
+	auto _sro { 0.f };
 	auto readBytes { 0 };
 	while (inFile.read(reinterpret_cast<char*>(buf.data()),
 			buf.size() * sizeof(myComplex_t))) {
@@ -120,9 +123,11 @@ void Rx::rx() {
 		readBytes += buf.size() * sizeof(myComplex_t);
 //		std::cout << readBytes << std::endl;
 		auto _nco = nco.update(buf, _ifo, f);
-		auto [_sync, _f] = sync.update(_nco, _fto);
+		auto __sro = sro.update(_nco, _sro);
+		auto [_sync, _f] = sync.update(__sro, _fto);
 		f = _f;
 		auto _fft = fft.update(_sync);
+		_sro = sro.sro(_fft);
 		_ifo = ifo.update(_fft);
 		auto [_eq, _cpilots] = eq.update(_fft);
 		_fto = fto.update(_cpilots);

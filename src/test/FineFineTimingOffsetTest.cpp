@@ -11,9 +11,11 @@
 #include <IntegerFrequencyOffset.h>
 #include <mytypes.h>
 #include <Nco.h>
+#include <SamplingFrequencyOffset.h>
 #include <Sync.h>
 #include <test/FineTimingOffsetTest.h>
 #include <fstream>
+#include <string>
 #include <vector>
 
 namespace dvb {
@@ -34,6 +36,7 @@ void FineTimingOffsetTest::testFto() {
 	auto ifo = IntegerFrequencyOffset { config };
 	auto eq = Equalizer { config };
 	auto fto = FineTimingOffset { config };
+	auto sro = SamplingFrequencyOffset { config };
 	auto inFile = std::ifstream(cfile);
 	auto buf = myBuffer_t(config.sym_len);
 	auto c { 0 };
@@ -42,15 +45,19 @@ void FineTimingOffsetTest::testFto() {
 	auto _ifo { 0.f };
 	auto _fto { 0.f };
 	auto f { 0.f };
+	auto _sro { 0.f };
 	auto outFile =
 			std::ofstream { ofile + std::to_string(c++), std::ios::binary };
 	while (inFile.read(reinterpret_cast<char*>(buf.data()),
 			buf.size() * sizeof(myComplex_t))) {
 
 		auto _nco = nco.update(buf, _ifo, f);
-		auto [_sync, _f] = sync.update(_nco, _fto);
+
+		auto __sro = sro.update(_nco, _sro);
+		auto [_sync, _f] = sync.update(__sro, _fto);
 		f = _f;
 		auto _fft = fft.update(_sync);
+		_sro = sro.sro(_fft);
 		_ifo = ifo.update(_fft);
 		auto _cpilots = eq.selCpilots(_fft);
 		_fto = fto.update(_cpilots);

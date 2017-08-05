@@ -17,10 +17,12 @@
 const int bitCount  = 36288;
 
 typedef float myReal_t;
+typedef int myInteger_t;
 typedef std::complex<myReal_t> myComplex_t;
 typedef std::vector<myComplex_t> myBuffer_t;
 typedef std::vector<myReal_t> myBufferR_t;
 typedef std::vector<unsigned char> myBufferB_t;
+typedef std::vector<myInteger_t> myBufferI_t;
 typedef std::deque<myComplex_t> myDelay_t;
 typedef std::bitset<bitCount> myBitset_t;
 
