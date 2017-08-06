@@ -55,10 +55,10 @@ void SamplingFrequencyOffsetTest::testSRO() {
 
 		auto _nco = nco.update(buf, _ifo, f, _rfo);
 
-		auto __sro = sro.update(_nco, _sro);
-		auto [_sync, _f] = sync.update(__sro, _fto);
+		auto [_sync, _f] = sync.update(_nco, _fto);
+		auto __sro = sro.update(_sync, _sro);
 		f = _f;
-		auto _fft = fft.update(_sync);
+		auto _fft = fft.update(__sro);
 		_sro = sro.sro(_fft);
 		_rfo = sro.rfo(_fft);
 		_ifo = ifo.update(_fft);

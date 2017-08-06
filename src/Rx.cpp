@@ -118,16 +118,17 @@ void Rx::rx() {
 	auto _sro { 0.f };
 	auto _rfo { 0.f };
 	auto readBytes { 0 };
+	auto coeff = std::sqrt(42.0f);
 	while (inFile.read(reinterpret_cast<char*>(buf.data()),
 			buf.size() * sizeof(myComplex_t))) {
 
 		readBytes += buf.size() * sizeof(myComplex_t);
 //		std::cout << readBytes << std::endl;
 		auto _nco = nco.update(buf, _ifo, f, _rfo);
-		auto __sro = sro.update(_nco, _sro);
-		auto [_sync, _f] = sync.update(__sro, _fto);
+		auto [_sync, _f] = sync.update(_nco, _fto);
+		auto __sro = sro.update(_sync, _sro);
 		f = _f;
-		auto _fft = fft.update(_sync);
+		auto _fft = fft.update(__sro);
 		_sro = sro.sro(_fft);
 		_rfo = sro.rfo(_fft);
 		_ifo = ifo.update(_fft);
@@ -137,8 +138,8 @@ void Rx::rx() {
 		auto _eqs = eqs.update(_eq, _frame);
 		auto _ds = ds.update(_eqs, _frame);
 		auto _mul = myBuffer_t(config.data_carrier_count);
-		std::transform(begin(_ds), end(_ds), begin(_mul), [](auto a) {
-			return a * 0.7955f;
+		std::transform(begin(_ds), end(_ds), begin(_mul), [&](auto a) {
+			return a * coeff;
 		});
 		auto _dem = dem.update(_mul);
 		auto _deint = deint.update(_dem, _frame);

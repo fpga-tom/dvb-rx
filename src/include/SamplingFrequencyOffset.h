@@ -13,9 +13,9 @@
 namespace dvb {
 
 
-const int SRO_N = 40;
+const int SRO_N = 50;
 const myReal_t SRO_P_GAIN = 1e-5;
-const myReal_t SRO_I_GAIN = 1e-2;
+const myReal_t SRO_I_GAIN = 4e-2;
 const myReal_t SRO_P_GAIN_RFO = 1e-5;
 const myReal_t SRO_I_GAIN_RFO = 1e-2;
 

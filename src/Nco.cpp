@@ -42,14 +42,15 @@ auto Nco::freqShift(myBuffer_t& in, myReal_t& corr) {
 
 	auto inc = PI2 * corr / config.sample_rate;
 	std::transform(begin(in), end(in), begin(result), [&](auto a) {
-		phase += inc;
 		while(phase > PI2) {
 			phase -= PI2;
 		}
 		while(phase < PI2) {
 			phase += PI2;
 		}
-		return a * myComplex_t {std::cos(phase), std::sin(phase)};
+		auto result = a * myComplex_t {std::cos(phase), std::sin(phase)};
+		phase += inc;
+		return result;
 	});
 	return result;
 }

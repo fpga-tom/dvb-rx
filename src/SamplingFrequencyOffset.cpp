@@ -55,7 +55,7 @@ myReal_t SamplingFrequencyOffset::sro(const myBuffer_t& b) {
 	std::copy(begin(complex), end(complex), begin(prev));
 	auto proportional = result * SRO_P_GAIN;
 	integral += result * SRO_I_GAIN;
-	return integral + proportional;
+	return proportional + integral;
 }
 
 myReal_t SamplingFrequencyOffset::rfo(const myBuffer_t& b) {
@@ -74,7 +74,7 @@ myReal_t SamplingFrequencyOffset::rfo(const myBuffer_t& b) {
 	std::copy(begin(complex), end(complex), begin(prevrfo));
 	auto proportional = result * SRO_P_GAIN_RFO;
 	integral_rfo += result * SRO_I_GAIN_RFO;
-	return integral_rfo + proportional;
+	return proportional + integral_rfo;
 }
 
 myBuffer_t SamplingFrequencyOffset::cpilots(const myBuffer_t& complex) {
@@ -93,16 +93,15 @@ myReal_t SamplingFrequencyOffset::binom(myReal_t n, myReal_t k) {
 
 
 myBufferR_t SamplingFrequencyOffset::coeff(const myReal_t d) {
-//	std::cout << d << std::endl;
-	assert(std::abs(d) < 1.5f);
+	assert(std::abs(d) < .5f);
 	auto count = SRO_N + 1;
 	auto range = myBufferI_t(count);
 	auto result = myBufferR_t(count);
 	std::iota(begin(range), end(range), 0);
-	std::transform(begin(range) + 1, end(range), begin(result) + 1,
+	std::transform(begin(range), end(range), begin(result),
 			[&](auto k) {
-				auto prod = std::accumulate(begin(range)+1,end(range), 1.0f, [&](auto p, auto n) {
-							auto result = p*(d + n)/(d + n + k);
+				auto prod = std::accumulate(begin(range),end(range), 1.0f, [&](auto p, auto n) {
+							auto result = p*(d+n)/(SRO_N + d + 1 + n);
 							return result;
 						});
 				return std::pow(-1, k) * binom(SRO_N, k) * prod;
@@ -114,8 +113,8 @@ myBufferR_t SamplingFrequencyOffset::coeff(const myReal_t d) {
 myBuffer_t SamplingFrequencyOffset::filter(const myBuffer_t& complex,
 		const myBufferR_t& cof) {
 	assert(complex.size() == config.sym_len);
-	auto tmp = myBuffer_t(cof.size() - 1);
-	auto tmp1 = myBuffer_t(cof.size() - 1);
+	auto tmp = myBuffer_t(delayB.size());
+	auto tmp1 = myBuffer_t(delayA.size());
 	auto result = myBuffer_t(complex.size());
 	auto it = begin(result);
 

@@ -21,7 +21,7 @@
 
 
 
-const std::string cfile = "/opt/dvb/input/dvb_res2.cfile";
+const std::string cfile = "/opt/dvb/input/dvb_res.cfile.orig";
 const std::string ofile = "/opt/dvb/output/";
 const std::string demap_input_file = "/opt/dvb/output/rx.0";
 const std::string demap_output_file = "/opt/dvb/output/demap.out";
@@ -156,7 +156,7 @@ void rx() {
 }
 
 int main(int argc, char **argv) {
-#define  TEST
+//#define  TEST
 #ifdef TEST
 	testCorrelation();
 	testAlign();

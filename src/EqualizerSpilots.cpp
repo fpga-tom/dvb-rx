@@ -64,11 +64,19 @@ myBuffer_t EqualizerSpilots::update(const myBuffer_t& in, int frame) {
 	auto c = begin(config.scattered_pilots_value[frame]);
 	std::transform(begin(spilots), end(spilots),
 			reinterpret_cast<myComplex_t*>(inBufInverse), [&](auto v) {
-				return v * std::conj(*c++);
+//				return v * std::conj(*c++);
+			return v / (*c++);
 			});
 
 	// interpolate cir
 	fftwf_execute(planInverse);
+
+	std::transform(reinterpret_cast<myComplex_t*>(outBufInverse),
+			reinterpret_cast<myComplex_t*>(outBufInverse)
+					+ config.scattered_pilots_count,
+			reinterpret_cast<myComplex_t*>(outBufInverse), [&](auto a) {
+				return a / (float)config.scattered_pilots_count;
+			});
 
 	// zero input buffer
 	std::fill(reinterpret_cast<myComplex_t*>(inBufForward),
@@ -81,6 +89,7 @@ myBuffer_t EqualizerSpilots::update(const myBuffer_t& in, int frame) {
 					+ cc,
 			reinterpret_cast<myComplex_t*>(inBufForward));
 
+
 	std::copy(
 			reinterpret_cast<myComplex_t*>(outBufInverse)
 					+ cc + 1,
@@ -88,6 +97,8 @@ myBuffer_t EqualizerSpilots::update(const myBuffer_t& in, int frame) {
 					+ config.continual_pilots_count,
 			reinterpret_cast<myComplex_t*>(inBufForward) + config.carriers
 					- cc);
+
+
 
 	// execute interpolation
 	fftwf_execute(planForward);
@@ -105,7 +116,7 @@ myBuffer_t EqualizerSpilots::update(const myBuffer_t& in, int frame) {
 	std::transform(begin(tmp), end(tmp),
 			reinterpret_cast<myComplex_t*>(outBufForward), begin(result),
 			[&](auto a, auto b) {
-				return a / b * (float)config.fft_len;
+				return a / b;
 			});
 
 	return result;
