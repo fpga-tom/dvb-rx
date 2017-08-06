@@ -114,7 +114,7 @@ std::tuple<myBuffer_t, myReal_t> Sync::update(const myBuffer_t& in,
 	}
 	auto freq = std::arg(b[peak]) / 2.0 / M_PI / config.fft_len
 			* config.sample_rate;
-	auto result = align(in, peak);
+	auto result = align(in, std::round(peak));
 
 //	auto f = peak - std::floor(peak);
 //	auto tmp = myBuffer_t(config.sym_len);

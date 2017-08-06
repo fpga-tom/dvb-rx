@@ -32,8 +32,8 @@ SamplingFrequencyOffset::SamplingFrequencyOffset(const myConfig_t& c) :
 			* (2 * M_PI * (config.sym_len) / config.fft_len);
 	pilotsSquareSum = 1.0f / pilotsSquareSum;
 
-	std::fill(begin(delayA), end(delayA), 0);
-	std::fill(begin(delayB), end(delayB), 0);
+	std::fill(begin(delayA), end(delayA), myComplex_t { 0.f, 0.f });
+	std::fill(begin(delayB), end(delayB), myComplex_t { 0.f, 0.f });
 }
 
 SamplingFrequencyOffset::~SamplingFrequencyOffset() {
@@ -93,17 +93,22 @@ myReal_t SamplingFrequencyOffset::binom(myReal_t n, myReal_t k) {
 
 
 myBufferR_t SamplingFrequencyOffset::coeff(const myReal_t d) {
-	assert(std::abs(d) < .5f);
+//	std::cout << ":" << d << std::endl;
+	assert(std::abs(d) < 1.5f);
 	auto count = SRO_N + 1;
 	auto range = myBufferI_t(count);
 	auto result = myBufferR_t(count);
 	std::iota(begin(range), end(range), 0);
-	std::transform(begin(range), end(range), begin(result),
+	std::transform(begin(range) + 1, end(range), begin(result) + 1,
 			[&](auto k) {
-				auto prod = std::accumulate(begin(range),end(range), 1.0f, [&](auto p, auto n) {
-							auto result = p*(d+n)/(SRO_N + d + 1 + n);
-							return result;
-						});
+				auto D = SRO_N + d;
+				auto nom = myReal_t {1.0f};
+				auto den = myReal_t {1.0f};
+				for(auto q {0}; q < k; q++) {
+					nom *= (D - (SRO_N - q));
+					den *= (D + (q+1));
+				}
+				auto prod = nom / den;
 				return std::pow(-1, k) * binom(SRO_N, k) * prod;
 	});
 	result[0] = 1.0f;
@@ -138,10 +143,12 @@ myBuffer_t SamplingFrequencyOffset::filter(const myBuffer_t& complex,
 		delayB.pop_back();
 		delayB.push_front(sample);
 
-		mid = std::accumulate(begin(tmp), end(tmp),
-				myComplex_t { 0, 0 })
-				+ std::accumulate(begin(tmp1), end(tmp1), myComplex_t { 0, 0 })
-				+ sample * cof[SRO_N];
+		assert(!isnanf(cof[SRO_N]));
+		auto sum1 = std::accumulate(begin(tmp), end(tmp), myComplex_t { 0, 0 });
+		auto sum2 = std::accumulate(begin(tmp1), end(tmp1),
+				myComplex_t { 0, 0 });
+
+		mid = sum1 + sum2 + sample * cof[SRO_N];
 
 		delayA.pop_back();
 		delayA.push_front(mid);

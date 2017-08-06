@@ -56,6 +56,10 @@ public:
 	virtual ~Sync();
 	std::tuple<myBuffer_t, myReal_t> update(const myBuffer_t& in,
 			const myReal_t);
+	myReal_t getSro() const {
+		return (std::round(peak) - peak);
+	}
+;
 };
 
 } /* namespace dvb */

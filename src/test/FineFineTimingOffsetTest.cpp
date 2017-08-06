@@ -56,10 +56,10 @@ void FineTimingOffsetTest::testFto() {
 			buf.size() * sizeof(myComplex_t))) {
 
 		auto _nco = nco.update(buf, _ifo, f, _rfo);
-		auto [_sync, _f] = sync.update(_nco, _fto);
-		auto __sro = sro.update(_sync, _sro);
+		auto __sro = sro.update(_nco, _sro + sync.getSro());
+		auto [_sync, _f] = sync.update(__sro, _fto);
 		f = _f;
-		auto _fft = fft.update(__sro);
+		auto _fft = fft.update(_sync);
 		_sro = sro.sro(_fft);
 		_rfo = sro.rfo(_fft);
 		_ifo = ifo.update(_fft);
