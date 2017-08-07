@@ -83,6 +83,8 @@ size_t Sync::findPeak(const myBuffer_t& b) {
  * Aligns data to start of frame
  */
 myBuffer_t Sync::align(const myBuffer_t& in, size_t peak) {
+	assert(peak >= 0);
+	assert(peak < config.sym_len);
 	auto n = config.sym_len - current_size;
 	std::copy_n(begin(in), n, begin(*current) + current_size);
 	current_size = in.size() - peak;
@@ -111,6 +113,9 @@ std::tuple<myBuffer_t, myReal_t> Sync::update(const myBuffer_t& in,
 		auto proportional = SYNC_P_GAIN * ft;
 		integral += SYNC_I_GAIN * ft;
 		peak = proportional + integral;
+	}
+	while (std::round(peak) >= config.sym_len) {
+		peak -= config.sym_len;
 	}
 	auto freq = std::arg(b[peak]) / 2.0 / M_PI / config.fft_len
 			* config.sample_rate;
