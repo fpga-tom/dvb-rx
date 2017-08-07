@@ -14,8 +14,8 @@
 
 namespace dvb {
 
-const myReal_t SYNC_P_GAIN = 1e-5;
-const myReal_t SYNC_I_GAIN = 3e-2;
+const myReal_t SYNC_P_GAIN = 1e-10;
+const myReal_t SYNC_I_GAIN = 4e-2;
 
 const int lockCount = 3;
 
@@ -56,6 +56,10 @@ public:
 	virtual ~Sync();
 	std::tuple<myBuffer_t, myReal_t> update(const myBuffer_t& in,
 			const myReal_t);
+	myReal_t getSro() const {
+		return (std::round(peak) - peak);
+	}
+;
 };
 
 } /* namespace dvb */

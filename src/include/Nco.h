@@ -15,7 +15,7 @@
 namespace dvb {
 
 const myReal_t PI2 = 2 * M_PI;
-const myReal_t NCO_P_GAIN = 1e-5;
+const myReal_t NCO_P_GAIN = 1e-4;
 const myReal_t NCO_I_GAIN = 3e-2;
 
 class Nco {
@@ -28,12 +28,12 @@ class Nco {
 	myReal_t integral;
 
 	// helper methods
-	auto correction(myReal_t&, myReal_t&);
+	auto correction(myReal_t&, myReal_t&, myReal_t&);
 	auto freqShift(myBuffer_t&, myReal_t&);
 public:
 	Nco(const myConfig_t&);
 	virtual ~Nco();
-	myBuffer_t update(myBuffer_t&, myReal_t, myReal_t);
+	myBuffer_t update(myBuffer_t&, myReal_t, myReal_t, myReal_t);
 };
 
 }

@@ -65,12 +65,19 @@ std::tuple<myBuffer_t, myBuffer_t> Equalizer::update(const myBuffer_t& in) {
 	std::transform(begin(cpilots), end(cpilots),
 			reinterpret_cast<myComplex_t*>(inBufInverse), [&](auto v) {
 				return v * std::conj(*c++);
-			});
+//			return v / (*c++);
+		});
 
 	// interpolate cir
 	fftwf_execute(planInverse);
 
 
+	std::transform(reinterpret_cast<myComplex_t*>(outBufInverse),
+			reinterpret_cast<myComplex_t*>(outBufInverse)
+					+ config.continual_pilots_count,
+			reinterpret_cast<myComplex_t*>(outBufInverse), [&](auto a) {
+				return a / (float)config.continual_pilots_count;
+			});
 
 	// zero input buffer
 	std::fill(reinterpret_cast<myComplex_t*>(inBufForward),
@@ -90,6 +97,8 @@ std::tuple<myBuffer_t, myBuffer_t> Equalizer::update(const myBuffer_t& in) {
 			reinterpret_cast<myComplex_t*>(inBufForward) + config.carriers
 					- config.carrier_center);
 
+
+
 	// execute interpolation
 	fftwf_execute(planForward);
 
@@ -106,7 +115,7 @@ std::tuple<myBuffer_t, myBuffer_t> Equalizer::update(const myBuffer_t& in) {
 	std::transform(begin(tmp), end(tmp),
 			reinterpret_cast<myComplex_t*>(outBufForward), begin(result),
 			[&](auto a, auto b) {
-				return a / b * (float)config.fft_len;
+				return a / b;
 	});
 
 	return {result, cpilots};

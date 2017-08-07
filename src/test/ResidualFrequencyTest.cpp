@@ -1,7 +1,7 @@
 /*
- * FtoTest.cpp
+ * ResidualFrequencyTest.cpp
  *
- *  Created on: Jul 23, 2017
+ *  Created on: Aug 5, 2017
  *      Author: tomas1
  */
 
@@ -13,25 +13,22 @@
 #include <Nco.h>
 #include <SamplingFrequencyOffset.h>
 #include <Sync.h>
-#include <test/FineTimingOffsetTest.h>
-#include <algorithm>
+#include <test/ResidualFrequencyTest.h>
 #include <fstream>
-#include <iterator>
 #include <string>
 #include <vector>
 
 namespace dvb {
 
-
-FineTimingOffsetTest::FineTimingOffsetTest(const myConfig_t& c, const std::string& cf,
-		const std::string& of) :
+ResidualFrequencyTest::ResidualFrequencyTest(const myConfig_t& c,
+		const std::string& cf, const std::string& of) :
 		config { c }, cfile { cf }, ofile { of } {
 }
 
-FineTimingOffsetTest::~FineTimingOffsetTest() {
+ResidualFrequencyTest::~ResidualFrequencyTest() {
 }
 
-void FineTimingOffsetTest::testFto() {
+void ResidualFrequencyTest::testRFO() {
 	auto sync = Sync { config };
 	auto nco = Nco { config };
 	auto fft = Fft { config };
@@ -51,26 +48,25 @@ void FineTimingOffsetTest::testFto() {
 	auto _rfo { 0.f };
 	auto outFile =
 			std::ofstream { ofile + std::to_string(c++), std::ios::binary };
-	auto integral = myReal_t { 0 };
 	while (inFile.read(reinterpret_cast<char*>(buf.data()),
 			buf.size() * sizeof(myComplex_t))) {
 
 		auto _nco = nco.update(buf, _ifo, f, _rfo);
-		auto [_sync, _f] = sync.update(_nco, _fto);
-		auto __sro = sro.update(_sync, _sro + sync.getSro());
+
+		auto __sro = sro.update(_nco, _sro);
+		auto [_sync, _f] = sync.update(__sro, _fto);
 		f = _f;
-		auto _fft = fft.update(__sro);
+		auto _fft = fft.update(_sync);
 		_sro = sro.sro(_fft);
 		_rfo = sro.rfo(_fft);
 		_ifo = ifo.update(_fft);
-		auto [_eq, _cpilots] = eq.update(_fft);
+		auto _cpilots = eq.selCpilots(_fft);
 		_fto = fto.update(_cpilots);
-		auto _out = sync.getSro();
+		auto _out = _rfo;
 
-
-			outFile << i++ << "\t" << _out << std::endl;
+		outFile << i++ << "\t" << _out << std::endl;
 	}
-		outFile.close();
+	outFile.close();
 }
 
-}
+} /* namespace dvb */

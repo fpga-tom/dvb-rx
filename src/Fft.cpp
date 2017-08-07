@@ -47,26 +47,32 @@ Fft::~Fft() {
 
 myBuffer_t Fft::update(const myBuffer_t& in) {
 	auto out = myBuffer_t(config.fft_len);
-
+	auto tmp = myBuffer_t(config.fft_len);
 	// to avoid ISI, we sample at half of cyclic prefix
 	std::copy(begin(in) + config.cp_len, end(in),
 			reinterpret_cast<myComplex_t*>(inBuf));
 
+//	std::copy(begin(tmp), begin(tmp) + config.cp_len / 2,
+//			reinterpret_cast<myComplex_t*>(inBuf) + config.fft_len
+//					- config.cp_len / 2);
+//	std::copy(begin(tmp) + config.cp_len / 2, end(tmp),
+//			reinterpret_cast<myComplex_t*>(inBuf));
+
 	fftwf_execute(plan);
 
-	// correct rotation introduced by samplig at half of cyclic prefix
-	auto tmp = myBuffer_t(config.fft_len);
-	auto phase { 0.f };
-	const auto phaseinc = 2 * M_PI * config.cp_len / 2 / config.fft_len;
-	std::transform(reinterpret_cast<myComplex_t*>(outBuf),
-			reinterpret_cast<myComplex_t*>(outBuf) + config.fft_len,
-			begin(tmp),
-			[&](auto a) {
-				return a;
-//				auto result = a * myComplex_t {std::cos(phase), std::sin(phase)};
-//				phase += phaseinc;
-//				return result;
-			});
+//	// correct rotation introduced by samplig at half of cyclic prefix
+//
+//	auto phase { 0.f };
+//	const auto phaseinc = 2 * M_PI * config.cp_len / 2 / config.fft_len;
+//	std::transform(reinterpret_cast<myComplex_t*>(outBuf),
+//			reinterpret_cast<myComplex_t*>(outBuf) + config.fft_len,
+//			begin(tmp),
+//			[&](auto a) {
+//				return a;
+////				auto result = a * myComplex_t {std::cos(phase), std::sin(phase)};
+////				phase += phaseinc;
+////				return result;
+//			});
 
 //	std::transform(reinterpret_cast<myComplex_t*>(outBuf) + config.fft_len / 2,
 //			reinterpret_cast<myComplex_t*>(outBuf) + config.fft_len,
@@ -77,9 +83,11 @@ myBuffer_t Fft::update(const myBuffer_t& in) {
 //				return result;
 //			});
 
-	std::copy(begin(tmp), begin(tmp) + config.fft_len / 2,
+	std::copy(reinterpret_cast<myComplex_t*>(outBuf),
+			reinterpret_cast<myComplex_t*>(outBuf) + config.fft_len / 2,
 			begin(out) + config.fft_len / 2);
-	std::copy(begin(tmp) + config.fft_len / 2, begin(tmp) + config.fft_len,
+	std::copy(reinterpret_cast<myComplex_t*>(outBuf) + config.fft_len / 2,
+			reinterpret_cast<myComplex_t*>(outBuf) + config.fft_len,
 			begin(out));
 
 	return out;

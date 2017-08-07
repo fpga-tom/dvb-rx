@@ -21,12 +21,16 @@ Nco::Nco(const myConfig_t& c) :
 Nco::~Nco() {
 }
 
-auto Nco::correction(myReal_t& ifo, myReal_t& f) {
+auto Nco::correction(myReal_t& ifo, myReal_t& f, myReal_t& r) {
 	auto fcorr { 0.f };
 	if (std::abs(ifo) >= 1) {
 		fcorr = -ifo * config.sample_rate / config.fft_len;
 	} else {
-		fcorr = -f;
+		if (std::abs(f) >= 1) {
+			fcorr = -f;
+		} else {
+			fcorr = r;
+		}
 	}
 	auto proportional = NCO_P_GAIN * fcorr;
 	integral += NCO_I_GAIN * fcorr;
@@ -38,20 +42,21 @@ auto Nco::freqShift(myBuffer_t& in, myReal_t& corr) {
 
 	auto inc = PI2 * corr / config.sample_rate;
 	std::transform(begin(in), end(in), begin(result), [&](auto a) {
-		phase += inc;
 		while(phase > PI2) {
 			phase -= PI2;
 		}
-		while(phase < PI2) {
+		while(phase < -PI2) {
 			phase += PI2;
 		}
-		return a * myComplex_t {std::cos(phase), std::sin(phase)};
+		auto result = a * myComplex_t {std::cos(phase), std::sin(phase)};
+		phase += inc;
+		return result;
 	});
 	return result;
 }
 
-myBuffer_t Nco::update(myBuffer_t& in, myReal_t ifo, myReal_t f) {
-	auto c = correction(ifo, f);
+myBuffer_t Nco::update(myBuffer_t& in, myReal_t ifo, myReal_t f, myReal_t r) {
+	auto c = correction(ifo, f, r);
 	return freqShift(in, c);
 }
 
