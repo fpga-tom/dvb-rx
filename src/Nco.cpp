@@ -45,7 +45,7 @@ auto Nco::freqShift(myBuffer_t& in, myReal_t& corr) {
 		while(phase > PI2) {
 			phase -= PI2;
 		}
-		while(phase < PI2) {
+		while(phase < -PI2) {
 			phase += PI2;
 		}
 		auto result = a * myComplex_t {std::cos(phase), std::sin(phase)};

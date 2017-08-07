@@ -6,6 +6,7 @@
  */
 
 #include <DataSelector.h>
+#include <ext/type_traits.h>
 #include <Equalizer.h>
 #include <EqualizerSpilots.h>
 #include <Fft.h>
@@ -15,7 +16,10 @@
 #include <SamplingFrequencyOffset.h>
 #include <Sync.h>
 #include <test/DataSelectorTest.h>
+#include <algorithm>
+#include <deque>
 #include <fstream>
+#include <iterator>
 #include <vector>
 
 namespace dvb {
@@ -62,7 +66,7 @@ void DataSelectorTest::testDataSelector() {
 		auto [_eq, _cpilots] = eq.update(_fft);
 		_fto = fto.update(_cpilots);
 		auto _frame = ds.frameNum(_eq);
-		auto _eqs = eqs.update(_eq, _frame);
+		auto _eqs = eqs.update(_fft, _frame);
 		auto _ds = ds.update(_eqs, _frame);
 		auto _out = _ds;
 

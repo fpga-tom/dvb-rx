@@ -126,7 +126,7 @@ void Rx::rx() {
 //		std::cout << readBytes << std::endl;
 		auto _nco = nco.update(buf, _ifo, f, _rfo);
 		auto [_sync, _f] = sync.update(_nco, _fto);
-		auto __sro = sro.update(_sync, _sro + sync.getSro());
+		auto __sro = sro.update(_sync, -_sro + sync.getSro());
 		f = _f;
 		auto _fft = fft.update(__sro);
 		_sro = sro.sro(_fft);
@@ -135,7 +135,7 @@ void Rx::rx() {
 		auto [_eq, _cpilots] = eq.update(_fft);
 		_fto = fto.update(_cpilots);
 		auto _frame = ds.frameNum(_eq);
-		auto _eqs = eqs.update(_eq, _frame);
+		auto _eqs = eqs.update(_fft, _frame);
 		auto _ds = ds.update(_eqs, _frame);
 		auto _mul = myBuffer_t(config.data_carrier_count);
 		std::transform(begin(_ds), end(_ds), begin(_mul), [&](auto a) {

@@ -57,7 +57,14 @@ myBuffer_t EqualizerSpilots::selSpilots(const myBuffer_t& in, int frame) {
 
 
 myBuffer_t EqualizerSpilots::update(const myBuffer_t& in, int frame) {
-	auto spilots = selSpilots(in, frame);
+	assert(in.size() == config.fft_len);
+
+	// copy usefull carriers
+	auto tmp = myBuffer_t(config.carriers);
+	std::copy(begin(in) + config.zeros_left, end(in) - config.zeros_right,
+			begin(tmp));
+
+	auto spilots = selSpilots(tmp, frame);
 
 	assert(spilots.size() == config.scattered_pilots_count);
 	// calculate cir
@@ -102,11 +109,6 @@ myBuffer_t EqualizerSpilots::update(const myBuffer_t& in, int frame) {
 
 	// execute interpolation
 	fftwf_execute(planForward);
-
-	// copy usefull carriers
-	auto tmp = myBuffer_t(config.carriers);
-	std::copy(begin(in), end(in),
-			begin(tmp));
 
 	// apply cir
 	auto result = myBuffer_t(config.carriers);
