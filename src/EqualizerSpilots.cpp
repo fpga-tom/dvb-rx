@@ -92,9 +92,9 @@ myBuffer_t EqualizerSpilots::update(const myBuffer_t& in, int frame) {
 
 	std::copy(
 			reinterpret_cast<myComplex_t*>(outBufInverse)
-					+ cc + 1,
+					+ cc,
 			reinterpret_cast<myComplex_t*>(outBufInverse)
-					+ config.continual_pilots_count,
+					+ config.scattered_pilots_count,
 			reinterpret_cast<myComplex_t*>(inBufForward) + config.carriers
 					- cc);
 

@@ -64,8 +64,8 @@ std::tuple<myBuffer_t, myBuffer_t> Equalizer::update(const myBuffer_t& in) {
 	auto c = begin(config.continual_pilots_value);
 	std::transform(begin(cpilots), end(cpilots),
 			reinterpret_cast<myComplex_t*>(inBufInverse), [&](auto v) {
-//				return v * std::conj(*c++);
-			return v / (*c++);
+				return v * std::conj(*c++);
+//			return v / (*c++);
 		});
 
 	// interpolate cir

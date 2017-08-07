@@ -14,9 +14,9 @@
 #include <SamplingFrequencyOffset.h>
 #include <Sync.h>
 #include <test/FineTimingOffsetTest.h>
-#include <cmath>
+#include <algorithm>
 #include <fstream>
-#include <iostream>
+#include <iterator>
 #include <string>
 #include <vector>
 
@@ -56,16 +56,16 @@ void FineTimingOffsetTest::testFto() {
 			buf.size() * sizeof(myComplex_t))) {
 
 		auto _nco = nco.update(buf, _ifo, f, _rfo);
-		auto __sro = sro.update(_nco, _sro + sync.getSro());
-		auto [_sync, _f] = sync.update(__sro, _fto);
+		auto [_sync, _f] = sync.update(_nco, _fto);
+		auto __sro = sro.update(_sync, _sro + sync.getSro());
 		f = _f;
-		auto _fft = fft.update(_sync);
+		auto _fft = fft.update(__sro);
 		_sro = sro.sro(_fft);
 		_rfo = sro.rfo(_fft);
 		_ifo = ifo.update(_fft);
-		auto _cpilots = eq.selCpilots(_fft);
+		auto [_eq, _cpilots] = eq.update(_fft);
 		_fto = fto.update(_cpilots);
-		auto _out = _fto;
+		auto _out = sync.getSro();
 
 
 			outFile << i++ << "\t" << _out << std::endl;
