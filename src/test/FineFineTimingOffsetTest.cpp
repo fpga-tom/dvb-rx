@@ -52,11 +52,13 @@ void FineTimingOffsetTest::testFto() {
 	auto outFile =
 			std::ofstream { ofile + std::to_string(c++), std::ios::binary };
 	auto integral = myReal_t { 0 };
+
+	auto ftoPrev = myReal_t { 0.f };
 	while (inFile.read(reinterpret_cast<char*>(buf.data()),
 			buf.size() * sizeof(myComplex_t))) {
 
 		auto _nco = nco.update(buf, _ifo, f, _rfo);
-		auto [_sync, _f] = sync.update(_nco, _fto);
+		auto [_sync, _f] = sync.update(_nco, _fto );
 		auto __sro = sro.update(_sync, sync.getSro());
 		f = _f;
 		auto _fft = fft.update(__sro);

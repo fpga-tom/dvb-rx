@@ -15,7 +15,7 @@
 namespace dvb {
 
 const myReal_t SYNC_P_GAIN = 1e-10;
-const myReal_t SYNC_I_GAIN = 4e-4;
+const myReal_t SYNC_I_GAIN = 1e-5;
 
 const int lockCount = 3;
 
@@ -58,7 +58,7 @@ public:
 			const myReal_t);
 	myReal_t getSro() const {
 		static auto integral = 0.f;
-		auto diff = (std::floor(peak) - peak);
+		auto diff = (std::round(peak) - peak);
 		integral += diff * 2e-3;
 //		return diff * 1e-5 + integral;
 		return diff;

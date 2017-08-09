@@ -116,23 +116,15 @@ std::tuple<myBuffer_t, myReal_t> Sync::update(const myBuffer_t& in,
 		integral += SYNC_I_GAIN * ft;
 		peak = proportional + integral;
 	}
-	while (peak > config.sym_len) {
-		peak -= config.sym_len;
-	}
-	while (peak < 0) {
-		peak += config.sym_len;
-	}
+//	while (peak >= config.sym_len) {
+//		peak -= config.sym_len;
+//	}
+//	while (peak < 0) {
+//		peak += config.sym_len;
+//	}
 	auto freq = std::arg(b[std::round(peak)]) / 2.0 / M_PI / config.fft_len
 			* config.sample_rate;
-	auto result = align(in, std::floor(peak));
-
-//	auto f = getSro();
-//	auto tmp = myBuffer_t(config.sym_len);
-//	std::transform(begin(result), end(result) - 1, begin(result) + 1,
-//			begin(tmp), [&](auto a, auto b) {
-//				return f * b + (1-f) * a;
-//			});
-
+	auto result = align(in, std::round(peak));
 	return {result, freq};
 }
 }

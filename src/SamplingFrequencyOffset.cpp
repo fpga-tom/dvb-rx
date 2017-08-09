@@ -147,8 +147,6 @@ myBuffer_t SamplingFrequencyOffset::filter(const myBuffer_t& complex,
 
 	for (auto sample : complex) {
 
-
-
 		std::transform(begin(delayB), end(delayB),
 				rbegin(cof) + 1, begin(tmp),
 			[&](auto a, auto b) {
@@ -174,9 +172,10 @@ myBuffer_t SamplingFrequencyOffset::filter(const myBuffer_t& complex,
 
 		delayA.pop_back();
 		delayA.push_front(mid);
-		if (count++ > SRO_N) {
+		count++;
+//		if (count > (SRO_N)) {
 			*it++ = mid;
-		}
+//		}
 	}
 	return result;
 }
