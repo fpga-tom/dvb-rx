@@ -16,6 +16,8 @@ namespace dvb {
 class EqualizerSpilots {
 
 	const myConfig_t config;
+	std::vector<myBuffer_t> spilotsBuf;
+	std::vector<int> scattered_indices;
 	// inverse fft variables
 	fftwf_complex *inBufInverse, *outBufInverse;
 	fftwf_plan_s *planInverse;

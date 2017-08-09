@@ -25,15 +25,17 @@ SamplingFrequencyOffset::SamplingFrequencyOffset(const myConfig_t& c) :
 	auto tmp = myBufferR_t(config.continual_pilots_count);
 	std::transform(begin(config.continual_pilots), end(config.continual_pilots),
 			begin(tmp), [&](auto a) {
-				auto t = a + config.zeros_left;
+				auto t = a;
 				return t*t;
 			});
-	pilotsSquareSum = std::accumulate(begin(tmp), end(tmp), myReal_t { 0.f })
+	pilotsSquareSum = std::accumulate(begin(tmp),
+			end(tmp), myReal_t { 0.f })
 			* (2 * M_PI * (config.sym_len) / config.fft_len);
 	pilotsSquareSum = 1.0f / pilotsSquareSum;
 
 	std::fill(begin(delayA), end(delayA), myComplex_t { 0.f, 0.f });
 	std::fill(begin(delayB), end(delayB), myComplex_t { 0.f, 0.f });
+	std::fill(begin(prev), end(prev), 0);
 }
 
 SamplingFrequencyOffset::~SamplingFrequencyOffset() {
@@ -45,17 +47,31 @@ myReal_t SamplingFrequencyOffset::sro(const myBuffer_t& b) {
 	assert(complex.size() == config.continual_pilots_count);
 	auto tmp = myBufferR_t(config.continual_pilots_count);
 	auto it = begin(config.continual_pilots);
-	std::transform(begin(complex), end(complex), begin(prev), begin(tmp),
+	std::transform(begin(complex), end(complex),
+			begin(prev),
+			begin(tmp),
 			[&](auto a, auto b) {
-				return std::arg(a*std::conj(b)) *( (*it++) + config.zeros_left);
+//				return a * std::conj(b);
+				auto angle = std::arg(a*std::conj(b));
+				auto idx = *it++;
+				auto result = angle*( idx );
+				return result;
 			});
-	auto result = std::accumulate(begin(tmp), end(tmp), myReal_t { 0.f })
-			* pilotsSquareSum;
 
+	auto sum1 = std::accumulate(begin(tmp),
+			end(tmp),
+			myReal_t { 0.f });
+	auto result = sum1 * pilotsSquareSum;
+//	auto sum2 = std::accumulate(begin(tmp) + config.carrier_center + 1,
+//			end(tmp), myComplex_t { 0.f, 0.f });
+//	auto result = (std::arg(sum2) - std::arg(sum1))
+//			/ ((2.0f * M_PI * config.sym_len / config.fft_len)
+//					* (config.continual_pilots_count / 2.0f));
 	std::copy(begin(complex), end(complex), begin(prev));
 	auto proportional = result * SRO_P_GAIN;
 	integral += result * SRO_I_GAIN;
-	return proportional + integral;
+//	return proportional + integral;
+	return result;
 }
 
 myReal_t SamplingFrequencyOffset::rfo(const myBuffer_t& b) {
@@ -74,7 +90,8 @@ myReal_t SamplingFrequencyOffset::rfo(const myBuffer_t& b) {
 	std::copy(begin(complex), end(complex), begin(prevrfo));
 	auto proportional = result * SRO_P_GAIN_RFO;
 	integral_rfo += result * SRO_I_GAIN_RFO;
-	return proportional + integral_rfo;
+//	return proportional + integral_rfo;
+	return result;
 }
 
 myBuffer_t SamplingFrequencyOffset::cpilots(const myBuffer_t& complex) {
@@ -94,7 +111,7 @@ myReal_t SamplingFrequencyOffset::binom(myReal_t n, myReal_t k) {
 
 myBufferR_t SamplingFrequencyOffset::coeff(const myReal_t d) {
 //	std::cout << ":" << d << std::endl;
-	assert(std::abs(d) < 1.5f);
+	assert(std::abs(d) <= 1.0f);
 	auto count = SRO_N + 1;
 	auto range = myBufferI_t(count);
 	auto result = myBufferR_t(count);
@@ -116,7 +133,7 @@ myBufferR_t SamplingFrequencyOffset::coeff(const myReal_t d) {
 }
 
 myBuffer_t SamplingFrequencyOffset::filter(const myBuffer_t& complex,
-		const myBufferR_t& cof) {
+		myReal_t sro) {
 	assert(complex.size() == config.sym_len);
 	auto tmp = myBuffer_t(delayB.size());
 	auto tmp1 = myBuffer_t(delayA.size());
@@ -124,8 +141,13 @@ myBuffer_t SamplingFrequencyOffset::filter(const myBuffer_t& complex,
 	auto it = begin(result);
 
 	myComplex_t mid { 0.f, 0.f };
+	myBufferR_t cof = coeff(sro);
+
+	auto count { 0 };
 
 	for (auto sample : complex) {
+
+
 
 		std::transform(begin(delayB), end(delayB),
 				rbegin(cof) + 1, begin(tmp),
@@ -152,7 +174,9 @@ myBuffer_t SamplingFrequencyOffset::filter(const myBuffer_t& complex,
 
 		delayA.pop_back();
 		delayA.push_front(mid);
-		*it++ = mid;
+		if (count++ > SRO_N) {
+			*it++ = mid;
+		}
 	}
 	return result;
 }
@@ -160,8 +184,8 @@ myBuffer_t SamplingFrequencyOffset::filter(const myBuffer_t& complex,
 myBuffer_t SamplingFrequencyOffset::update(const myBuffer_t& complex,
 		const myReal_t _sro) {
 	assert(complex.size() == config.sym_len);
-	auto co = coeff(_sro);
-	auto result = filter(complex, co);
+//	auto co = coeff(_sro);
+	auto result = filter(complex, _sro);
 	return result;
 }
 

@@ -118,6 +118,7 @@ std::tuple<myBuffer_t, myBuffer_t> Equalizer::update(const myBuffer_t& in) {
 				return a / b;
 	});
 
+
 	return {result, cpilots};
 
 }

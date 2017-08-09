@@ -23,13 +23,13 @@ Nco::~Nco() {
 
 auto Nco::correction(myReal_t& ifo, myReal_t& f, myReal_t& r) {
 	auto fcorr { 0.f };
-	if (std::abs(ifo) >= 1) {
+	if (std::abs(ifo) >= 1.0f) {
 		fcorr = -ifo * config.sample_rate / config.fft_len;
 	} else {
-		if (std::abs(f) >= 1) {
+		if (std::abs(f) >= 1.0f) {
 			fcorr = -f;
 		} else {
-			fcorr = r;
+			fcorr = -r;
 		}
 	}
 	auto proportional = NCO_P_GAIN * fcorr;

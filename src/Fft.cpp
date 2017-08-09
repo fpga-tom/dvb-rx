@@ -49,14 +49,14 @@ myBuffer_t Fft::update(const myBuffer_t& in) {
 	auto out = myBuffer_t(config.fft_len);
 	auto tmp = myBuffer_t(config.fft_len);
 	// to avoid ISI, we sample at half of cyclic prefix
-	std::copy(begin(in) + config.cp_len, end(in),
-			reinterpret_cast<myComplex_t*>(inBuf));
+	std::copy(begin(in) + config.cp_len / 2, end(in) - config.cp_len / 2,
+			begin(tmp));
 
-//	std::copy(begin(tmp), begin(tmp) + config.cp_len / 2,
-//			reinterpret_cast<myComplex_t*>(inBuf) + config.fft_len
-//					- config.cp_len / 2);
-//	std::copy(begin(tmp) + config.cp_len / 2, end(tmp),
-//			reinterpret_cast<myComplex_t*>(inBuf));
+	std::copy(begin(tmp), begin(tmp) + config.cp_len / 2,
+			reinterpret_cast<myComplex_t*>(inBuf) + config.fft_len
+					- config.cp_len / 2);
+	std::copy(begin(tmp) + config.cp_len / 2, end(tmp),
+			reinterpret_cast<myComplex_t*>(inBuf));
 
 	fftwf_execute(plan);
 

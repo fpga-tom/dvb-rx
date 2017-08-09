@@ -5,25 +5,25 @@
  *      Author: tomas1
  */
 
-#include <ext/type_traits.h>
 #include <EqualizerSpilots.h>
 #include <algorithm>
 #include <cassert>
-#include <complex>
-#include <deque>
+#include <iostream>
 #include <iterator>
 #include <vector>
 
 namespace dvb {
 
 EqualizerSpilots::EqualizerSpilots(const myConfig_t& c) :
-		config { c } {
+		config { c }, spilotsBuf { std::vector<myBuffer_t>(4) }, scattered_indices(
+				config.scattered_pilots_count * 4) {
 	inBufInverse = reinterpret_cast<fftwf_complex*>(fftwf_malloc(
-			sizeof(fftwf_complex) * config.scattered_pilots_count));
+			sizeof(fftwf_complex) * config.scattered_pilots_count * 4));
 	outBufInverse = reinterpret_cast<fftwf_complex*>(fftwf_malloc(
-			sizeof(fftwf_complex) * config.scattered_pilots_count));
+			sizeof(fftwf_complex) * config.scattered_pilots_count * 4));
 
-	planInverse = fftwf_plan_dft_1d(config.scattered_pilots_count, inBufInverse,
+	planInverse = fftwf_plan_dft_1d(config.scattered_pilots_count * 4,
+			inBufInverse,
 			outBufInverse, FFTW_BACKWARD, FFTW_ESTIMATE);
 
 	inBufForward = reinterpret_cast<fftwf_complex*>(fftwf_malloc(
@@ -33,6 +33,23 @@ EqualizerSpilots::EqualizerSpilots(const myConfig_t& c) :
 
 	planForward = fftwf_plan_dft_1d(config.carriers, inBufForward,
 			outBufForward, FFTW_FORWARD, FFTW_ESTIMATE);
+
+	auto tmp = myBufferI_t(config.carriers);
+	std::fill(begin(tmp), end(tmp), 0);
+	for (auto i { 0 }; i < 4; i++) {
+		spilotsBuf[i] = myBuffer_t(config.scattered_pilots_count);
+		for (auto c : config.scattered_pilots[i]) {
+			tmp[c] = 1;
+		}
+	}
+	auto i { 0 };
+	auto it = begin(scattered_indices);
+	for (auto c : tmp) {
+		if (c != 0) {
+			*it++ = i;
+		}
+		i++;
+	}
 }
 
 EqualizerSpilots::~EqualizerSpilots() {
@@ -69,10 +86,24 @@ myBuffer_t EqualizerSpilots::update(const myBuffer_t& in, int frame) {
 	assert(spilots.size() == config.scattered_pilots_count);
 	// calculate cir
 	auto c = begin(config.scattered_pilots_value[frame]);
-	std::transform(begin(spilots), end(spilots),
-			reinterpret_cast<myComplex_t*>(inBufInverse), [&](auto v) {
+	std::transform(begin(spilots), end(spilots), begin(spilotsBuf[frame]),
+			[&](auto v) {
 //				return v * std::conj(*c++);
-			return v / (*c++);
+				return v / (*c++);
+			});
+	auto carriers = myBuffer_t(config.carriers);
+	std::fill(begin(carriers), end(carriers), myComplex_t { 0.f, 0.f });
+	for (auto i { 0 }; i < 4; i++) {
+		auto it = begin(config.scattered_pilots[i]);
+		for (auto c : spilotsBuf[i]) {
+			carriers[*it++] = c;
+		}
+	}
+	auto it = begin(scattered_indices);
+	std::generate(reinterpret_cast<myComplex_t*>(inBufInverse),
+			reinterpret_cast<myComplex_t*>(inBufInverse)
+					+ config.scattered_pilots_count * 4, [&]() {
+				return carriers[*it++];
 			});
 
 	// interpolate cir
@@ -80,28 +111,25 @@ myBuffer_t EqualizerSpilots::update(const myBuffer_t& in, int frame) {
 
 	std::transform(reinterpret_cast<myComplex_t*>(outBufInverse),
 			reinterpret_cast<myComplex_t*>(outBufInverse)
-					+ config.scattered_pilots_count,
+					+ config.scattered_pilots_count * 4,
 			reinterpret_cast<myComplex_t*>(outBufInverse), [&](auto a) {
-				return a / (float)config.scattered_pilots_count;
+				return a / (float)(config.scattered_pilots_count * 4);
 			});
 
 	// zero input buffer
 	std::fill(reinterpret_cast<myComplex_t*>(inBufForward),
 			reinterpret_cast<myComplex_t*>(inBufForward) + config.carriers, 0);
 
-	int cc = config.scattered_pilots_count / 2;
+	int cc = config.scattered_pilots_count * 4 / 2;
 	// align data
 	std::copy(reinterpret_cast<myComplex_t*>(outBufInverse),
-			reinterpret_cast<myComplex_t*>(outBufInverse)
-					+ cc,
+			reinterpret_cast<myComplex_t*>(outBufInverse) + cc,
 			reinterpret_cast<myComplex_t*>(inBufForward));
 
 
-	std::copy(
+		std::copy(reinterpret_cast<myComplex_t*>(outBufInverse) + cc,
 			reinterpret_cast<myComplex_t*>(outBufInverse)
-					+ cc,
-			reinterpret_cast<myComplex_t*>(outBufInverse)
-					+ config.scattered_pilots_count,
+					+ config.scattered_pilots_count * 4,
 			reinterpret_cast<myComplex_t*>(inBufForward) + config.carriers
 					- cc);
 

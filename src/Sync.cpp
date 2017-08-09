@@ -6,12 +6,14 @@
  */
 
 #include <stddef.h>
+#include <SamplingFrequencyOffset.h>
 #include <Sync.h>
 #include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <complex>
 #include <deque>
+#include <iostream>
 #include <iterator>
 #include <tuple>
 #include <vector>
@@ -82,7 +84,7 @@ size_t Sync::findPeak(const myBuffer_t& b) {
 /**
  * Aligns data to start of frame
  */
-myBuffer_t Sync::align(const myBuffer_t& in, size_t peak) {
+myBuffer_t Sync::align(const myBuffer_t& in, myInteger_t peak) {
 	assert(peak >= 0);
 	assert(peak < config.sym_len);
 	auto n = config.sym_len - current_size;
@@ -114,14 +116,17 @@ std::tuple<myBuffer_t, myReal_t> Sync::update(const myBuffer_t& in,
 		integral += SYNC_I_GAIN * ft;
 		peak = proportional + integral;
 	}
-	while (std::round(peak) >= config.sym_len) {
+	while (peak > config.sym_len) {
 		peak -= config.sym_len;
 	}
-	auto freq = std::arg(b[peak]) / 2.0 / M_PI / config.fft_len
+	while (peak < 0) {
+		peak += config.sym_len;
+	}
+	auto freq = std::arg(b[std::round(peak)]) / 2.0 / M_PI / config.fft_len
 			* config.sample_rate;
-	auto result = align(in, std::round(peak));
+	auto result = align(in, std::floor(peak));
 
-//	auto f = peak - std::floor(peak);
+//	auto f = getSro();
 //	auto tmp = myBuffer_t(config.sym_len);
 //	std::transform(begin(result), end(result) - 1, begin(result) + 1,
 //			begin(tmp), [&](auto a, auto b) {
