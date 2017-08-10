@@ -100,14 +100,15 @@ myBuffer_t Sync::align(const myBuffer_t& in, myInteger_t peak) {
 /**
  * computing method
  */
-std::tuple<myBuffer_t, myReal_t> Sync::update(const myBuffer_t& in,
+std::tuple<myBuffer_t, myReal_t, bool> Sync::update(const myBuffer_t& in,
 		const myReal_t fineTiming) {
 
 
 
 	auto b = correlate(in, delay, accDelay, acc);
-	if (currentLock < lockCount + 10) {
-		peak = findPeak(b);
+	auto peakFind = findPeak(b);
+	if (currentLock < lockCount) {
+		peak = peakFind;
 		integral = peak;
 		currentLock++;
 	} else {
@@ -116,15 +117,23 @@ std::tuple<myBuffer_t, myReal_t> Sync::update(const myBuffer_t& in,
 		integral += SYNC_I_GAIN * ft;
 		peak = proportional + integral;
 	}
-//	while (peak >= config.sym_len) {
-//		peak -= config.sym_len;
-//	}
-//	while (peak < 0) {
-//		peak += config.sym_len;
-//	}
+	bool locked = !(currentLock >= lockCount
+			&& std::abs(peak - peakFind) > 100);
+	if (!locked) {
+		std::cerr << "Lost sync " << fineTiming << " " << peak << " "
+				<< peakFind << std::endl;
+		// restart sync
+		currentLock = 0;
+	}
+	while (peak >= config.sym_len) {
+		peak -= config.sym_len;
+	}
+	while (peak < 0) {
+		peak += config.sym_len;
+	}
 	auto freq = std::arg(b[std::round(peak)]) / 2.0 / M_PI / config.fft_len
 			* config.sample_rate;
 	auto result = align(in, std::round(peak));
-	return {result, freq};
+	return {result, freq, locked};
 }
 }

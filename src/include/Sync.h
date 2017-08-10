@@ -17,7 +17,7 @@ namespace dvb {
 const myReal_t SYNC_P_GAIN = 1e-10;
 const myReal_t SYNC_I_GAIN = 1e-7;
 
-const int lockCount = 3;
+const int lockCount = 10;
 
 /**
  * Takes input stream of complex samples and generates
@@ -54,7 +54,7 @@ class Sync {
 public:
 	Sync(const myConfig_t&);
 	virtual ~Sync();
-	std::tuple<myBuffer_t, myReal_t> update(const myBuffer_t& in,
+	std::tuple<myBuffer_t, myReal_t, bool> update(const myBuffer_t& in,
 			const myReal_t);
 	myReal_t getSro() const {
 		static auto integral = 0.f;

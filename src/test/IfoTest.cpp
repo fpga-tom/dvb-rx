@@ -37,7 +37,7 @@ void IntegerFrequencyOffsetTest::testIfo() {
 	while (inFile.read(reinterpret_cast<char*>(buf.data()),
 			buf.size() * sizeof(myComplex_t))) {
 
-		auto [_sync, f] = sync.update(buf, _fto);
+		auto [_sync, f, _locked] = sync.update(buf, _fto);
 		auto _fft = fft.update(_sync);
 		auto _out = update(_fft);
 

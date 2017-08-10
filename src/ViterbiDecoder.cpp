@@ -32,7 +32,7 @@ ViterbiDecoder::ViterbiDecoder(const myConfig_t&c) :
 		dup(parentWrite[0]);
 		close(1);
 		dup(parentRead[1]);
-		execlp("/opt/viterbi/Debug/viterbi", "/opt/viterbi/Debug/viterbi",
+		execlp("/opt/viterbi/Release/viterbi", "/opt/viterbi/Release/viterbi",
 				nullptr);
 		perror("execlp");
 		exit(1);

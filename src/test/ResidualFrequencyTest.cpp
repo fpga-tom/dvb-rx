@@ -54,7 +54,7 @@ void ResidualFrequencyTest::testRFO() {
 		auto _nco = nco.update(buf, _ifo, f, _rfo);
 
 		auto __sro = sro.update(_nco, _sro);
-		auto [_sync, _f] = sync.update(__sro, _fto);
+		auto [_sync, _f, _locked] = sync.update(__sro, _fto);
 		f = _f;
 		auto _fft = fft.update(_sync);
 		_sro = sro.sro(_fft);

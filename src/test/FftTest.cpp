@@ -41,7 +41,7 @@ void FftTest::testFft() {
 
 
 
-		auto [_sync, f] = sync.update(buf, _fto);
+		auto [_sync, f, _locked] = sync.update(buf, _fto);
 		auto _out = fft.update(_sync);
 		auto outFile = std::ofstream { ofile + std::to_string(c++),
 				std::ios::binary };

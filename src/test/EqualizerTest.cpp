@@ -49,7 +49,7 @@ void EqualizerTest::testEqualizer() {
 			buf.size() * sizeof(myComplex_t))) {
 
 		auto _nco = nco.update(buf, _ifo, f, _rfo);
-		auto [_sync, _f] = sync.update(_nco, _fto);
+		auto [_sync, _f, _locked] = sync.update(_nco, _fto);
 		f = _f;
 		auto _fft = fft.update(_sync);
 		_sro = sro.sro(_fft);
@@ -85,7 +85,7 @@ void EqualizerTest::testSelector() {
 			buf.size() * sizeof(myComplex_t))) {
 
 		auto _nco = nco.update(buf, _ifo, f, 0);
-		auto [_sync, _f] = sync.update(_nco, _fto);
+		auto [_sync, _f, _locked] = sync.update(_nco, _fto);
 		f = _f;
 		auto _fft = fft.update(_sync);
 		_ifo = ifo.update(_fft);
