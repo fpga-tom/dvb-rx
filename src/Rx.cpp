@@ -79,19 +79,19 @@ void Rx::getOutputs(std::ofstream& outFile1, myBufferB_t& out, int to_out) {
 		}
 	}
 
-	if (inSync) {
-		outFile1.write(
-				reinterpret_cast<const char*>(out.data() + syncCounter),
-				out.size() - syncCounter - to_out);
+//	if (inSync) {
 //		outFile1.write(
-//				reinterpret_cast<const char*>(rtObj.rtY.decoderOut)
-//				+ syncCounter, 189 - syncCounter);
-//		syncCounter = 0;
-	}
+//				reinterpret_cast<const char*>(out.data() + syncCounter),
+//				out.size() - syncCounter - to_out);
+////		outFile1.write(
+////				reinterpret_cast<const char*>(rtObj.rtY.decoderOut)
+////				+ syncCounter, 189 - syncCounter);
+////		syncCounter = 0;
+//	}
 }
 
 void Rx::rx() {
-	auto traceback = 9;
+	auto traceback = 16;
 	auto sync = Sync { config };
 	auto nco = Nco { config };
 	auto sro = SamplingFrequencyOffset { config };
@@ -157,12 +157,17 @@ void Rx::rx() {
 		}
 
 		if (frameZeroCount > 30) {
-			auto _viterbi = viterbi.update(_deint, _frame);
-			outFile.write(reinterpret_cast<char*>(_out.data()),
-					_out.size() * sizeof(myComplex_t));
+			auto notReset = inSync || _frame != 0;
+			auto _viterbi = viterbi.update(_deint, notReset);
+//			outFile.write(reinterpret_cast<char*>(_out.data()),
+//					_out.size() * sizeof(myComplex_t));
 
 			auto viterbiEnd = (_frame == 0 ? 0 : 0);
 			getOutputs(outFile1, _viterbi, viterbiEnd);
+			static std::deque<char> queue;
+			if (!notReset) {
+				queue.clear();
+			}
 			if (inSync) {
 				static auto sync2 { 0 };
 				auto sbuf = myBufferB_t(3024 - syncCounter - viterbiEnd);
@@ -170,7 +175,6 @@ void Rx::rx() {
 				std::copy(begin(_viterbi) + syncCounter,
 						end(_viterbi) - viterbiEnd,
 						begin(sbuf));
-				static std::deque<char> queue;
 				for (auto ch : sbuf) {
 					queue.push_back(ch);
 				}

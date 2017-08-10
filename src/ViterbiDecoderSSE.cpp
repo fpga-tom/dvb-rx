@@ -44,10 +44,10 @@ ViterbiDecoderSSE::~ViterbiDecoderSSE() {
 
 myBufferB_t ViterbiDecoderSSE::update(const myBitset_t& bitset,
 		myInteger_t frame) {
-//	if (frame == 0) {
-//		d_init = 0;
-//		d_viterbi_chunks_init_sse2(metric0, path0);
-//	}
+	if (frame == 0) {
+		d_init = 0;
+		d_viterbi_chunks_init_sse2(metric0, path0);
+	}
 	auto noutput_items = 3024;
 	auto out_count = 0;
 	auto d_m = 6;
