@@ -5,17 +5,14 @@
  *      Author: tomas1
  */
 
-#include <stddef.h>
-#include <SamplingFrequencyOffset.h>
 #include <Sync.h>
+#include <volk/volk.h>
+#include <volk/volk_malloc.h>
 #include <algorithm>
 #include <cassert>
-#include <cmath>
 #include <complex>
-#include <deque>
 #include <iostream>
 #include <iterator>
-#include <tuple>
 #include <vector>
 
 namespace dvb {
@@ -28,10 +25,16 @@ Sync::Sync(const myConfig_t &c) :
 	current = std::make_shared<myBuffer_t>(config.sym_len);
 	next = std::make_shared<myBuffer_t>(config.sym_len);
 
-
+	unsigned int alignment = volk_get_alignment();
+	in = (lv_32fc_t*) volk_malloc(
+			sizeof(lv_32fc_t) * config.sym_len, alignment);
+	out = (lv_32fc_t*) volk_malloc(
+			sizeof(lv_32fc_t) * config.sym_len, alignment);
 }
 
 Sync::~Sync() {
+	volk_free(in);
+	volk_free(out);
 }
 
 /**
@@ -78,7 +81,10 @@ size_t Sync::findPeak(const myBuffer_t& b) {
 	accPeak = accPeak + peakIdx - last;
 	peakDelay.pop_front();
 	peakDelay.push_back(peakIdx);
-	return accPeak / (myReal_t) lockCount;
+	auto result = accPeak / (myReal_t) lockCount;
+	assert(result >= 0);
+	assert(result < config.sym_len);
+	return result;
 }
 
 /**
@@ -107,7 +113,7 @@ std::tuple<myBuffer_t, myReal_t, bool> Sync::update(const myBuffer_t& in,
 
 	auto b = correlate(in, delay, accDelay, acc);
 	auto peakFind = findPeak(b);
-	if (currentLock < lockCount + 10) {
+	if (currentLock < lockCount + 5) {
 		peak = peakFind;
 		integral = peak;
 		currentLock++;
@@ -126,7 +132,7 @@ std::tuple<myBuffer_t, myReal_t, bool> Sync::update(const myBuffer_t& in,
 //	}
 
 	bool locked =
-			!(currentLock >= lockCount + 10
+			!(currentLock >= lockCount + 5
 			&& std::abs(peak - peakFind) > 2000);
 	if (!locked) {
 		std::cerr << "Lost sync " << fineTiming << " " << peak << " "

@@ -8,9 +8,13 @@
 #ifndef SRC_SYNC_H_
 #define SRC_SYNC_H_
 
+#include <mytypes.h>
+#include <stddef.h>
+#include <volk/volk_complex.h>
+#include <cmath>
+#include <deque>
 #include <memory>
-
-#include "mytypes.h"
+#include <tuple>
 
 namespace dvb {
 
@@ -45,6 +49,9 @@ class Sync {
 	// framer variables
 	std::shared_ptr<myBuffer_t> current;		// current frame
 	std::shared_ptr<myBuffer_t> next;			// next frame
+
+	lv_32fc_t *in;
+	lv_32fc_t *out;
 
 	// helper methods
 	myBuffer_t correlate(const myBuffer_t&, myBuffer_t&, myDelay_t& accDelay,

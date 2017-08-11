@@ -42,6 +42,7 @@
 							<tool commandLinePattern="${COMMAND} ${FLAGS} ${OUTPUT_FLAG} ${OUTPUT_PREFIX}${OUTPUT} ${INPUTS}" id="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug.1617114319" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug">
 								<option id="gnu.cpp.link.option.libs.349860948" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" useByScannerDiscovery="false" valueType="libs">
 									<listOptionValue builtIn="false" value="fftw3f"/>
+									<listOptionValue builtIn="false" value="volk"/>
 								</option>
 								<option id="gnu.cpp.link.option.flags.759412082" name="Linker flags" superClass="gnu.cpp.link.option.flags" useByScannerDiscovery="false" value="" valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1078200507" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">

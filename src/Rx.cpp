@@ -129,7 +129,7 @@ void Rx::rx() {
 		readBytes += buf.size() * sizeof(myComplex_t);
 //		std::cout << readBytes << std::endl;
 		auto _nco = nco.update(buf, _ifo, f, _rfo);
-		auto [_sync, _f, _locked] = sync.update(_nco, _fto );
+		auto [_sync, _f, _locked] = sync.update(_nco, _fto + _sro);
 		if (!_locked) {
 			inSync = false;
 		}

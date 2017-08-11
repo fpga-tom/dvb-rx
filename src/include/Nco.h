@@ -9,6 +9,7 @@
 #define SRC_NCO_H_
 
 #include <cmath>
+#include <volk/volk.h>
 
 #include "mytypes.h"
 
@@ -22,14 +23,18 @@ class Nco {
 	FRIEND_TEST(NcoTest);
 
 	const myConfig_t config;
-	myReal_t phase;
+	lv_32fc_t phase;
 
 	// pi controller integral part
 	myReal_t integral;
 
+	lv_32fc_t *in;
+	lv_32fc_t *out;
+
 	// helper methods
 	auto correction(myReal_t&, myReal_t&, myReal_t&);
 	auto freqShift(myBuffer_t&, myReal_t&);
+
 public:
 	Nco(const myConfig_t&);
 	virtual ~Nco();
