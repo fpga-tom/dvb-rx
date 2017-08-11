@@ -16,15 +16,15 @@
 
 const int bitCount  = 36288;
 
-typedef float myReal_t;
-typedef int myInteger_t;
-typedef std::complex<myReal_t> myComplex_t;
-typedef std::vector<myComplex_t> myBuffer_t;
-typedef std::vector<myReal_t> myBufferR_t;
-typedef std::vector<unsigned char> myBufferB_t;
-typedef std::vector<myInteger_t> myBufferI_t;
-typedef std::deque<myComplex_t> myDelay_t;
-typedef std::bitset<bitCount> myBitset_t;
+using myReal_t = float;
+using myInteger_t = int;
+using myComplex_t = std::complex<myReal_t>;
+using myBuffer_t = std::vector<myComplex_t>;
+using myBufferR_t = std::vector<myReal_t>;
+using myBufferB_t = std::vector<unsigned char>;
+using myBufferI_t = std::vector<myInteger_t>;
+using myDelay_t = std::deque<myComplex_t>;
+using myBitset_t = std::bitset<bitCount>;
 
 typedef struct {
 	myInteger_t fft_len;
