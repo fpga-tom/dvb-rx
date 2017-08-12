@@ -16,11 +16,11 @@
 #include <SamplingFrequencyOffset.h>
 #include <Sync.h>
 #include <test/DataSelectorTest.h>
-#include <algorithm>
 #include <deque>
 #include <fstream>
 #include <iterator>
 #include <vector>
+#include <algorithm>
 
 namespace dvb {
 

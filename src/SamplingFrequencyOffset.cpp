@@ -173,9 +173,9 @@ myBuffer_t SamplingFrequencyOffset::filter(const myBuffer_t& complex,
 		delayA.pop_back();
 		delayA.push_front(mid);
 		count++;
-//		if (count > (SRO_N)) {
+		if (count > (SRO_N)) {
 			*it++ = mid;
-//		}
+		}
 	}
 	return result;
 }
