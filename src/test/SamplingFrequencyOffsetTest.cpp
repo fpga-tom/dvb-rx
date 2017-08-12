@@ -9,15 +9,13 @@
 #include <Fft.h>
 #include <FineTimingOffset.h>
 #include <IntegerFrequencyOffset.h>
-#include <mytypes.h>
 #include <Nco.h>
 #include <SamplingFrequencyOffset.h>
 #include <Sync.h>
 #include <test/SamplingFrequencyOffsetTest.h>
-#include <cmath>
+#include <algorithm>
 #include <fstream>
-#include <iostream>
-#include <string>
+#include <iterator>
 #include <vector>
 
 namespace dvb {
@@ -50,13 +48,15 @@ void SamplingFrequencyOffsetTest::testSRO() {
 	auto _rfo { 0.f };
 	auto outFile =
 			std::ofstream { ofile + std::to_string(c++), std::ios::binary };
+	auto count { 0 };
 	while (inFile.read(reinterpret_cast<char*>(buf.data()),
 			buf.size() * sizeof(myComplex_t))) {
 
 		auto _nco = nco.update(buf, _ifo, f, _rfo);
 
-		auto [_sync, _f] = sync.update(_nco, _fto);
-		auto __sro = sro.update(_sync, _sro);
+
+		auto [_sync, _f, _locked] = sync.update(_nco, _fto );
+		auto __sro = sro.update(_sync, sync.getSro());
 		f = _f;
 		auto _fft = fft.update(__sro);
 		_sro = sro.sro(_fft);

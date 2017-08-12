@@ -62,11 +62,11 @@ int DataSelector::frameNum(const myBuffer_t& in) {
 				end(config.scattered_pilots[i]), begin(f), [&](auto a) {
 					return in[a];
 				});
-		auto acc = myComplex_t { 0, 0 };
 		auto it = begin(config.scattered_pilots_value[i]);
-		for (auto a : f) {
-			acc += a * std::conj(*it++);
-		}
+		auto acc = std::accumulate(begin(f), end(f), myComplex_t { 0, 0 },
+				[&](auto a, auto b) {
+					return a + b * std::conj(*it++);
+				});
 		maxs[i] = std::abs(acc);
 	}
 

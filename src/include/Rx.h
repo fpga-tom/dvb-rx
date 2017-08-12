@@ -23,7 +23,7 @@ class Rx {
 	std::deque<bool> q0, q1, q2, q3, q4, q5, q6, q7, q8;
 	bool inSync;
 	int syncCounter;
-	void getOutputs(std::ofstream&, myBufferB_t&);
+	void getOutputs(std::ofstream&, myBufferB_t&, int);
 
 public:
 	Rx(const myConfig_t&, const std::string&, const std::string&);

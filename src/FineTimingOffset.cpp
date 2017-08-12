@@ -8,9 +8,10 @@
 #include <FineTimingOffset.h>
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <complex>
-#include <iostream>
 #include <iterator>
+#include <numeric>
 #include <vector>
 
 namespace dvb {
@@ -26,13 +27,24 @@ FineTimingOffset::FineTimingOffset(const myConfig_t& c) :
 //	plan = fftwf_plan_dft_1d(config.fft_len, inBuf, outBuf, FFTW_BACKWARD,
 //	FFTW_ESTIMATE);
 
-
 }
 
 FineTimingOffset::~FineTimingOffset() {
 //	fftwf_free(inBuf);
 //	fftwf_free(outBuf);
 //	fftwf_destroy_plan(plan);
+}
+
+// wrap to [-pi,pi]
+double angle_norm(double x) {
+	x = std::remainder(x + .5, 1.0);
+	if (x < 0)
+		x += 1.0;
+	return x - .5;
+}
+
+double phase_unwrap(double prev, double now) {
+	return prev + angle_norm(now - prev);
 }
 
 myReal_t FineTimingOffset::update(const myBuffer_t& in) {
@@ -53,15 +65,13 @@ myReal_t FineTimingOffset::update(const myBuffer_t& in) {
 				return std::conj(a) * b;
 			});
 
-
 	std::transform(begin(x), end(x), begin(z), begin(y), [](auto a, auto b) {
 		return std::conj(a) * b;
 	});
-	auto acc = myComplex_t { 0, 0 };
-	for (auto a : y) {
-		acc += a;
-	}
-	return (config.continual_pilots_count) * std::arg(acc) / 2.0 / M_PI;
+	auto acc = std::accumulate(begin(y), end(y), myComplex_t { 0, 0 });
+	static auto prev = myReal_t { 0.f };
+	auto result = (config.fft_len) * std::arg(acc) / 2.0 / M_PI;
+	return result;
 //	auto z = myBuffer_t(config.fft_len);
 //	std::fill(begin(z), end(z), 0);
 //	auto it = begin(in);
@@ -91,7 +101,6 @@ myReal_t FineTimingOffset::update(const myBuffer_t& in) {
 ////	std::cout << idx << std::endl;
 //
 //	return idx;
-
 
 }
 

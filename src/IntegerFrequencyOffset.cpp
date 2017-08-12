@@ -40,11 +40,6 @@ int IntegerFrequencyOffset::update(myBuffer_t& in) {
 				});
 		auto acc = std::accumulate(begin(tmp), end(tmp),
 				myComplex_t { 0, 0 });
-//		for (auto t : config.continual_pilots) {
-//			auto arg0 = in[base + t];
-//			auto arg1 = prev[base + t];
-//			acc += arg0 * std::conj(arg1);
-//		}
 		maxs[i + hi] = std::abs(acc);
 	}
 

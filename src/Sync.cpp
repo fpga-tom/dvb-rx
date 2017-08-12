@@ -5,15 +5,14 @@
  *      Author: tomas1
  */
 
-#include <stddef.h>
 #include <Sync.h>
+#include <volk/volk.h>
+#include <volk/volk_malloc.h>
 #include <algorithm>
 #include <cassert>
-#include <cmath>
 #include <complex>
-#include <deque>
+#include <iostream>
 #include <iterator>
-#include <tuple>
 #include <vector>
 
 namespace dvb {
@@ -26,10 +25,16 @@ Sync::Sync(const myConfig_t &c) :
 	current = std::make_shared<myBuffer_t>(config.sym_len);
 	next = std::make_shared<myBuffer_t>(config.sym_len);
 
-
+	unsigned int alignment = volk_get_alignment();
+	in = (lv_32fc_t*) volk_malloc(
+			sizeof(lv_32fc_t) * config.sym_len, alignment);
+	out = (lv_32fc_t*) volk_malloc(
+			sizeof(lv_32fc_t) * config.sym_len, alignment);
 }
 
 Sync::~Sync() {
+	volk_free(in);
+	volk_free(out);
 }
 
 /**
@@ -76,13 +81,16 @@ size_t Sync::findPeak(const myBuffer_t& b) {
 	accPeak = accPeak + peakIdx - last;
 	peakDelay.pop_front();
 	peakDelay.push_back(peakIdx);
-	return accPeak / (myReal_t) lockCount;
+	auto result = accPeak / (myReal_t) lockCount;
+	assert(result >= 0);
+	assert(result < config.sym_len);
+	return result;
 }
 
 /**
  * Aligns data to start of frame
  */
-myBuffer_t Sync::align(const myBuffer_t& in, size_t peak) {
+myBuffer_t Sync::align(const myBuffer_t& in, myInteger_t peak) {
 	assert(peak >= 0);
 	assert(peak < config.sym_len);
 	auto n = config.sym_len - current_size;
@@ -98,14 +106,15 @@ myBuffer_t Sync::align(const myBuffer_t& in, size_t peak) {
 /**
  * computing method
  */
-std::tuple<myBuffer_t, myReal_t> Sync::update(const myBuffer_t& in,
+std::tuple<myBuffer_t, myReal_t, bool> Sync::update(const myBuffer_t& in,
 		const myReal_t fineTiming) {
 
 
 
 	auto b = correlate(in, delay, accDelay, acc);
-	if (currentLock < lockCount + 10) {
-		peak = findPeak(b);
+	auto peakFind = findPeak(b);
+	if (currentLock < lockCount + 5) {
+		peak = peakFind;
 		integral = peak;
 		currentLock++;
 	} else {
@@ -114,20 +123,26 @@ std::tuple<myBuffer_t, myReal_t> Sync::update(const myBuffer_t& in,
 		integral += SYNC_I_GAIN * ft;
 		peak = proportional + integral;
 	}
-	while (std::round(peak) >= config.sym_len) {
-		peak -= config.sym_len;
+
+//	while (peak >= config.sym_len) {
+//		peak -= config.sym_len;
+//	}
+//	while (peak < 0) {
+//		peak += config.sym_len;
+//	}
+
+	bool locked =
+			!(currentLock >= lockCount + 5
+			&& std::abs(peak - peakFind) > 2000);
+	if (!locked) {
+		std::cerr << "Lost sync " << fineTiming << " " << peak << " "
+				<< peakFind << std::endl;
+		// restart sync
+		currentLock = 0;
 	}
-	auto freq = std::arg(b[peak]) / 2.0 / M_PI / config.fft_len
+	auto freq = std::arg(b[std::round(peak)]) / 2.0 / M_PI / config.fft_len
 			* config.sample_rate;
 	auto result = align(in, std::round(peak));
-
-//	auto f = peak - std::floor(peak);
-//	auto tmp = myBuffer_t(config.sym_len);
-//	std::transform(begin(result), end(result) - 1, begin(result) + 1,
-//			begin(tmp), [&](auto a, auto b) {
-//				return f * b + (1-f) * a;
-//			});
-
-	return {result, freq};
+	return {result, freq, locked};
 }
 }

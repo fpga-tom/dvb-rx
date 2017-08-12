@@ -16,11 +16,11 @@
 #include <SamplingFrequencyOffset.h>
 #include <Sync.h>
 #include <test/DataSelectorTest.h>
-#include <algorithm>
 #include <deque>
 #include <fstream>
 #include <iterator>
 #include <vector>
+#include <algorithm>
 
 namespace dvb {
 
@@ -56,8 +56,8 @@ void DataSelectorTest::testDataSelector() {
 			buf.size() * sizeof(myComplex_t))) {
 
 		auto _nco = nco.update(buf, _ifo, f, _rfo);
-		auto [_sync, _f] = sync.update(_nco, _fto);
-		auto __sro = sro.update(_sync, _sro + sync.getSro());
+		auto [_sync, _f, _locked] = sync.update(_nco, _fto);
+		auto __sro = sro.update(_sync, sync.getSro());
 		f = _f;
 		auto _fft = fft.update(__sro);
 		_sro = sro.sro(_fft);

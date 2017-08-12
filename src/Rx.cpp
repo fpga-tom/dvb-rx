@@ -19,11 +19,13 @@
 #include <Rx.h>
 #include <SamplingFrequencyOffset.h>
 #include <Sync.h>
-#include <ViterbiDecoder.h>
+#include <ViterbiDecoderSSE.h>
 #include <algorithm>
+#include <cmath>
 #include <fstream>
 #include <iterator>
 #include <vector>
+#include <cassert>
 
 namespace dvb {
 
@@ -43,11 +45,11 @@ Rx::Rx(const myConfig_t& c, const std::string& cf, const std::string& of) :
 Rx::~Rx() {
 }
 
-void Rx::getOutputs(std::ofstream& outFile1, myBufferB_t& out) {
+void Rx::getOutputs(std::ofstream& outFile1, myBufferB_t& out, int to_out) {
 
 //	std::cout << std::endl;
 	if (!inSync) {
-		for (auto it { 0 }; it < out.size(); it++) {
+		for (auto it { 0 }; it < out.size() - to_out; it++) {
 			auto a = out[it];
 //		printf("%X", a);
 			if (!inSync) {
@@ -77,17 +79,19 @@ void Rx::getOutputs(std::ofstream& outFile1, myBufferB_t& out) {
 		}
 	}
 
-	if (inSync) {
-		outFile1.write(reinterpret_cast<const char*>(out.data() + syncCounter),
-				out.size() - syncCounter);
+//	if (inSync) {
 //		outFile1.write(
-//				reinterpret_cast<const char*>(rtObj.rtY.decoderOut)
-//				+ syncCounter, 189 - syncCounter);
-//		syncCounter = 0;
-	}
+//				reinterpret_cast<const char*>(out.data() + syncCounter),
+//				out.size() - syncCounter - to_out);
+////		outFile1.write(
+////				reinterpret_cast<const char*>(rtObj.rtY.decoderOut)
+////				+ syncCounter, 189 - syncCounter);
+////		syncCounter = 0;
+//	}
 }
 
 void Rx::rx() {
+	auto traceback = 16;
 	auto sync = Sync { config };
 	auto nco = Nco { config };
 	auto sro = SamplingFrequencyOffset { config };
@@ -99,7 +103,7 @@ void Rx::rx() {
 	auto ds = DataSelector { config };
 	auto dem = Demap { config };
 	auto deint = Deinterleaver { config };
-	auto viterbi = ViterbiDecoder { config };
+	auto viterbi = ViterbiDecoderSSE { config, traceback };
 	auto descrambler = Descrambler { config };
 	auto inFile = std::ifstream(cfile);
 	auto buf = myBuffer_t(config.sym_len);
@@ -125,8 +129,11 @@ void Rx::rx() {
 		readBytes += buf.size() * sizeof(myComplex_t);
 //		std::cout << readBytes << std::endl;
 		auto _nco = nco.update(buf, _ifo, f, _rfo);
-		auto [_sync, _f] = sync.update(_nco, _fto);
-		auto __sro = sro.update(_sync, -_sro + sync.getSro());
+		auto [_sync, _f, _locked] = sync.update(_nco, _fto + _sro);
+		if (!_locked) {
+			inSync = false;
+		}
+		auto __sro = sro.update(_sync, sync.getSro());
 		f = _f;
 		auto _fft = fft.update(__sro);
 		_sro = sro.sro(_fft);
@@ -143,7 +150,6 @@ void Rx::rx() {
 		});
 		auto _dem = dem.update(_mul);
 		auto _deint = deint.update(_dem, _frame);
-		auto _viterbi = viterbi.update(_deint);
 		auto _out = _ds;
 
 		if (_frame == 0) {
@@ -151,16 +157,24 @@ void Rx::rx() {
 		}
 
 		if (frameZeroCount > 30) {
-			outFile.write(reinterpret_cast<char*>(_out.data()),
-					_out.size() * sizeof(myComplex_t));
+			auto notReset = inSync || _frame != 0;
+			auto _viterbi = viterbi.update(_deint, notReset);
+//			outFile.write(reinterpret_cast<char*>(_out.data()),
+//					_out.size() * sizeof(myComplex_t));
 
-			getOutputs(outFile1, _viterbi);
+			auto viterbiEnd = (_frame == 0 ? 0 : 0);
+			getOutputs(outFile1, _viterbi, viterbiEnd);
+			static std::deque<char> queue;
+			if (!notReset) {
+				queue.clear();
+			}
 			if (inSync) {
 				static auto sync2 { 0 };
-				auto sbuf = myBufferB_t(3024 - syncCounter);
-				std::copy(begin(_viterbi) + syncCounter, end(_viterbi),
+				auto sbuf = myBufferB_t(3024 - syncCounter - viterbiEnd);
+				assert(3024 - syncCounter - viterbiEnd > 0);
+				std::copy(begin(_viterbi) + syncCounter,
+						end(_viterbi) - viterbiEnd,
 						begin(sbuf));
-				static std::deque<char> queue;
 				for (auto ch : sbuf) {
 					queue.push_back(ch);
 				}

@@ -44,7 +44,7 @@ void NcoTest::testNco() {
 	while (inFile.read(reinterpret_cast<char*>(buf.data()),
 			buf.size() * sizeof(myComplex_t))) {
 		auto _nco = nco.update(buf, _ifo, f, 0);
-		auto [_sync, _f] = sync.update(_nco, _fto);
+		auto [_sync, _f, _locked] = sync.update(_nco, _fto);
 		f = _f;
 		auto _fft = fft.update(_nco);
 		auto _out = ifo.update(_fft);
@@ -77,7 +77,7 @@ void NcoTest::testNcoFractional() {
 
 		auto _nco = nco.update(buf, _ifo, f, _rfo);
 		auto __sro = sro.update(_nco, _sro);
-		auto [_sync, _f] = sync.update(__sro, _fto);
+		auto [_sync, _f, _locked] = sync.update(__sro, _fto);
 		f = _f;
 		auto _fft = fft.update(_nco);
 		_sro = sro.sro(_fft);
