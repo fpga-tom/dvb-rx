@@ -133,7 +133,7 @@ std::tuple<myBuffer_t, myReal_t, bool> Sync::update(const myBuffer_t& in,
 
 	bool locked =
 			!(currentLock >= lockCount + 5
-			&& std::abs(peak - peakFind) > 40);
+			&& std::abs(peak - peakFind) > 20);
 	if (!locked) {
 		std::cerr << "Lost sync " << fineTiming << " " << peak << " "
 				<< peakFind << std::endl;

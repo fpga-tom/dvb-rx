@@ -19,7 +19,7 @@
 namespace dvb {
 
 const myReal_t SYNC_P_GAIN = 1e-10;
-const myReal_t SYNC_I_GAIN = 9e-4;
+const myReal_t SYNC_I_GAIN = 5e-4;
 
 const myInteger_t lockCount = 5;
 

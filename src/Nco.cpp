@@ -38,7 +38,7 @@ auto Nco::correction(myReal_t& ifo, myReal_t& f, myReal_t& r) {
 	if (std::abs(ifo) >= 1.0f) {
 		fcorr = -ifo * config.sample_rate / config.fft_len;
 	} else {
-		if (std::abs(f) >= 1.0f) {
+		if (std::abs(f) >= 0.5f) {
 			fcorr = -f;
 		} else {
 			fcorr = -r;
