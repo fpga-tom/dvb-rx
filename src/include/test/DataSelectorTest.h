@@ -21,6 +21,7 @@ public:
 	DataSelectorTest(const myConfig_t&, const std::string&, const std::string&);
 	virtual ~DataSelectorTest();
 	void testDataSelector();
+	void testFrameNum();
 };
 
 } /* namespace dvb */

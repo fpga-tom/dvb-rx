@@ -18,9 +18,6 @@ class FineTimingOffset {
 	FRIEND_TEST(FtoTest);
 
 	const myConfig_t config;
-
-	fftwf_complex *inBuf, *outBuf;
-	fftwf_plan_s* plan;
 public:
 	FineTimingOffset(const myConfig_t&);
 	virtual ~FineTimingOffset();

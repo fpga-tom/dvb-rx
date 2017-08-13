@@ -163,7 +163,6 @@ myBuffer_t SamplingFrequencyOffset::filter(const myBuffer_t& complex,
 		delayB.pop_back();
 		delayB.push_front(sample);
 
-		assert(!isnanf(cof[SRO_N]));
 		auto sum1 = std::accumulate(begin(tmp), end(tmp), myComplex_t { 0, 0 });
 		auto sum2 = std::accumulate(begin(tmp1), end(tmp1),
 				myComplex_t { 0, 0 });
@@ -173,7 +172,7 @@ myBuffer_t SamplingFrequencyOffset::filter(const myBuffer_t& complex,
 		delayA.pop_back();
 		delayA.push_front(mid);
 		count++;
-		if (count > (SRO_N)) {
+		if (count >= (SRO_N)) {
 			*it++ = mid;
 		}
 	}

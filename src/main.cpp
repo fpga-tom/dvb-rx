@@ -60,6 +60,12 @@ void testAlign() {
 	syncTest.testAlign();
 }
 
+void testPeak() {
+	std::cout << __PRETTY_FUNCTION__ << std::endl;
+	auto syncTest = SyncTest { DVBT_CONFIG_1, cfile, ofile + "peak." };
+	syncTest.testPeak();
+}
+
 void testFft() {
 	std::cout << __PRETTY_FUNCTION__ << std::endl;
 	auto fftTest = FftTest { DVBT_CONFIG_1, cfile, ofile + "fft." };
@@ -111,6 +117,13 @@ void testDataSelector() {
 	dataSelectorTest.testDataSelector();
 }
 
+void testFrameNum() {
+	std::cout << __PRETTY_FUNCTION__ << std::endl;
+	auto dataSelectorTest = DataSelectorTest { DVBT_CONFIG_1, cfile, ofile
+			+ "frame." };
+	dataSelectorTest.testFrameNum();
+}
+
 void testDemap() {
 	std::cout << __PRETTY_FUNCTION__ << std::endl;
 	auto demapTest = DemapTest { DVBT_CONFIG_1, demap_input_file, demap_output_file };
@@ -160,6 +173,7 @@ int main(int argc, char **argv) {
 #ifdef TEST
 	testCorrelation();
 	testAlign();
+	testPeak();
 	testFft();
 	testIfo();
 	testNco();
@@ -168,6 +182,7 @@ int main(int argc, char **argv) {
 	testEqualizer();
 	testFto();
 	testDataSelector();
+	testFrameNum();
 	testDemap();
 	testDemapUpdate();
 	testDeinterleaverSymbol();

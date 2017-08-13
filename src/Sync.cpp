@@ -124,25 +124,25 @@ std::tuple<myBuffer_t, myReal_t, bool> Sync::update(const myBuffer_t& in,
 		peak = proportional + integral;
 	}
 
-//	while (peak >= config.sym_len) {
-//		peak -= config.sym_len;
-//	}
-//	while (peak < 0) {
-//		peak += config.sym_len;
-//	}
+	while (peak >= config.sym_len) {
+		peak -= config.sym_len;
+	}
+	while (peak < 0) {
+		peak += config.sym_len;
+	}
 
 	bool locked =
 			!(currentLock >= lockCount + 5
-			&& std::abs(peak - peakFind) > 2000);
+			&& std::abs(peak - peakFind) > 40);
 	if (!locked) {
 		std::cerr << "Lost sync " << fineTiming << " " << peak << " "
 				<< peakFind << std::endl;
 		// restart sync
 		currentLock = 0;
 	}
-	auto freq = std::arg(b[std::round(peak)]) / 2.0 / M_PI / config.fft_len
+	auto freq = std::arg(b[std::floor(peak)]) / 2.0 / M_PI / config.fft_len
 			* config.sample_rate;
-	auto result = align(in, std::round(peak));
+	auto result = align(in, std::floor(peak));
 	return {result, freq, locked};
 }
 }

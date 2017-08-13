@@ -10,6 +10,7 @@
 #include <cassert>
 #include <cmath>
 #include <complex>
+#include <iostream>
 #include <iterator>
 #include <numeric>
 #include <vector>
@@ -18,15 +19,6 @@ namespace dvb {
 
 FineTimingOffset::FineTimingOffset(const myConfig_t& c) :
 		config { c } {
-//	inBuf = reinterpret_cast<fftwf_complex*>(fftwf_malloc(
-//			sizeof(fftwf_complex) * config.fft_len));
-//
-//	outBuf = reinterpret_cast<fftwf_complex*>(fftwf_malloc(
-//			sizeof(fftwf_complex) * config.fft_len));
-//
-//	plan = fftwf_plan_dft_1d(config.fft_len, inBuf, outBuf, FFTW_BACKWARD,
-//	FFTW_ESTIMATE);
-
 }
 
 FineTimingOffset::~FineTimingOffset() {
@@ -37,10 +29,10 @@ FineTimingOffset::~FineTimingOffset() {
 
 // wrap to [-pi,pi]
 double angle_norm(double x) {
-	x = std::remainder(x + .5, 1.0);
+	x = std::remainder(x + .5 * M_PI, 1.0 * M_PI);
 	if (x < 0)
-		x += 1.0;
-	return x - .5;
+		x += M_PI;
+	return x - .5 * M_PI;
 }
 
 double phase_unwrap(double prev, double now) {
@@ -52,6 +44,7 @@ myReal_t FineTimingOffset::update(const myBuffer_t& in) {
 	auto z = myBuffer_t(config.continual_pilots_count - 1);
 	auto x = myBuffer_t(config.continual_pilots_count - 1);
 	auto y = myBuffer_t(config.continual_pilots_count - 1);
+
 
 	std::transform(begin(in), end(in) - 1, begin(in) + 1, begin(z),
 			[](auto a, auto b) {
@@ -68,40 +61,10 @@ myReal_t FineTimingOffset::update(const myBuffer_t& in) {
 	std::transform(begin(x), end(x), begin(z), begin(y), [](auto a, auto b) {
 		return std::conj(a) * b;
 	});
+
 	auto acc = std::accumulate(begin(y), end(y), myComplex_t { 0, 0 });
-	static auto prev = myReal_t { 0.f };
 	auto result = (config.fft_len) * std::arg(acc) / 2.0 / M_PI;
 	return result;
-//	auto z = myBuffer_t(config.fft_len);
-//	std::fill(begin(z), end(z), 0);
-//	auto it = begin(in);
-//	for (auto i : config.continual_pilots) {
-//		z[config.zeros_left + i] = *it++;
-//	}
-//	std::copy(begin(z), end(z), reinterpret_cast<myComplex_t*>(inBuf));
-//	fftwf_execute(plan);
-//
-//	auto first = std::find_if(reinterpret_cast<myComplex_t*>(outBuf),
-//			reinterpret_cast<myComplex_t*>(outBuf)
-//					+ config.fft_len / 2,
-//			[&](auto a) {
-//				return std::abs(a) > 550;
-//			});
-//
-//	auto idx = std::distance(reinterpret_cast<myComplex_t*>(outBuf), first);
-//
-////	std::for_each(reinterpret_cast<myComplex_t*>(outBuf),
-////			reinterpret_cast<myComplex_t*>(outBuf) + config.fft_len / 2,
-////			[](auto a) {
-////				std::cout << std::abs(a) << ",";
-////			});
-////
-////	std::cout << std::endl;
-////
-////	std::cout << idx << std::endl;
-//
-//	return idx;
-
 }
 
 }

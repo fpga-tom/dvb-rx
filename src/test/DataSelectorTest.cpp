@@ -70,8 +70,7 @@ void DataSelectorTest::testDataSelector() {
 		auto _ds = ds.update(_eqs, _frame);
 		auto _out = _ds;
 
-		auto outFile = std::ofstream { ofile + std::to_string(c++),
-				std::ios::binary };
+		auto outFile = std::ofstream { ofile + std::to_string(c++) };
 		for (auto t : _out) {
 			outFile << real(t) << "\t" << imag(t) << std::endl;
 		}
@@ -82,3 +81,49 @@ void DataSelectorTest::testDataSelector() {
 
 
 } /* namespace dvb */
+
+void dvb::DataSelectorTest::testFrameNum() {
+	auto sync = Sync { config };
+	auto nco = Nco { config };
+	auto fft = Fft { config };
+	auto ifo = IntegerFrequencyOffset { config };
+	auto fto = FineTimingOffset { config };
+	auto eq = Equalizer { config };
+	auto eqs = EqualizerSpilots { config };
+	auto ds = DataSelector { config };
+	auto sro = SamplingFrequencyOffset { config };
+	auto inFile = std::ifstream(cfile);
+	auto buf = myBuffer_t(config.sym_len);
+	auto c { 0 };
+
+	auto _ifo { 0.f };
+	auto f { 0.f };
+	auto _fto { 0.f };
+	auto _sro { 0.f };
+	auto _rfo { 0.f };
+	auto i { 0 };
+	auto outFile =
+			std::ofstream { ofile + std::to_string(c++) };
+	while (inFile.read(reinterpret_cast<char*>(buf.data()),
+			buf.size() * sizeof(myComplex_t))) {
+
+		auto _nco = nco.update(buf, _ifo, f, _rfo);
+		auto [_sync, _f, _locked] = sync.update(_nco, _fto);
+		auto __sro = sro.update(_sync, sync.getSro());
+		f = _f;
+		auto _fft = fft.update(__sro);
+		_sro = sro.sro(_fft);
+		_rfo = sro.rfo(_fft);
+		_ifo = ifo.update(_fft);
+		auto [_eq, _cpilots] = eq.update(_fft);
+		_fto = fto.update(_cpilots);
+		auto _frame = ds.frameNum(_eq);
+		auto _eqs = eqs.update(_fft, _frame);
+		auto _ds = ds.update(_eqs, _frame);
+		auto _out = _frame;
+
+
+		outFile << i++ << "\t" << _out << std::endl;
+	}
+		outFile.close();
+}
