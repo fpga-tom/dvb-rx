@@ -12,6 +12,7 @@
 #include <deque>
 #include <iostream>
 #include <string>
+#include <boost/atomic.hpp>
 
 namespace dvb {
 
@@ -21,9 +22,7 @@ class Rx {
 	const std::string ofile;
 
 	std::deque<bool> q0, q1, q2, q3, q4, q5, q6, q7, q8;
-	bool inSync;
-	int syncCounter;
-	void getOutputs(std::ofstream&, myBufferB_t&, int);
+	std::tuple<bool, myInteger_t> synchronize(const myBufferB_t&);
 
 public:
 	Rx(const myConfig_t&, const std::string&, const std::string&);

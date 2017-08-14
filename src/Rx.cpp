@@ -26,11 +26,19 @@
 #include <iterator>
 #include <vector>
 #include <cassert>
+#include <boost/lockfree/spsc_queue.hpp>
+#include <boost/atomic.hpp>
+#include <thread>
+
+#include <unistd.h>
+#include <sys/syscall.h>
+#include <sys/types.h>
+
 
 namespace dvb {
 
 Rx::Rx(const myConfig_t& c, const std::string& cf, const std::string& of) :
-		config { c }, cfile { cf }, ofile { of }, inSync { 0 }, syncCounter { -1 } {
+		config { c }, cfile { cf }, ofile { of } {
 
 	q0 = std::deque<bool>(204 * 8);
 	q1 = std::deque<bool>(204 * 7);
@@ -45,13 +53,14 @@ Rx::Rx(const myConfig_t& c, const std::string& cf, const std::string& of) :
 Rx::~Rx() {
 }
 
-void Rx::getOutputs(std::ofstream& outFile1, myBufferB_t& out, int to_out) {
+std::tuple<bool, myInteger_t> Rx::synchronize(const myBufferB_t& out) {
 
-//	std::cout << std::endl;
+	auto inSync = false;
+	auto syncCounter = 0;
+
 	if (!inSync) {
-		for (auto it { 0 }; it < out.size() - to_out; it++) {
+		for (auto it { 0 }; it < out.size(); it++) {
 			auto a = out[it];
-//		printf("%X", a);
 			if (!inSync) {
 				inSync = q0.front() && q1.front() && q2.front() && q3.front()
 						&& q4.front() && q5.front() && q6.front() && q7.front();
@@ -78,16 +87,7 @@ void Rx::getOutputs(std::ofstream& outFile1, myBufferB_t& out, int to_out) {
 
 		}
 	}
-
-//	if (inSync) {
-//		outFile1.write(
-//				reinterpret_cast<const char*>(out.data() + syncCounter),
-//				out.size() - syncCounter - to_out);
-////		outFile1.write(
-////				reinterpret_cast<const char*>(rtObj.rtY.decoderOut)
-////				+ syncCounter, 189 - syncCounter);
-////		syncCounter = 0;
-//	}
+	return {inSync, syncCounter};
 }
 
 void Rx::rx() {
@@ -118,11 +118,76 @@ void Rx::rx() {
 	auto outFile1 = std::ofstream { ofile + "viterbi", std::ios::binary };
 	auto outFile2 = std::ofstream { ofile + "ts", std::ios::binary };
 
-	auto frameZeroCount { 0 };
 	auto _sro { 0.f };
 	auto _rfo { 0.f };
 	auto readBytes { 0 };
 	auto coeff = std::sqrt(42.0f);
+
+	boost::lockfree::spsc_queue<std::tuple<myBitset_t*, int, int, bool>*,
+			boost::lockfree::capacity<64>> queueViterbi;
+
+	auto done = boost::atomic<bool>(false);
+
+	auto viterbiThread =
+			std::thread(
+					[&]() {
+
+						std::cout << "viterbi thread id: " << syscall(SYS_gettid) << std::endl;
+
+						auto inSync = false;
+						auto syncCounter = 0;
+						while(!done) {
+							std::tuple<myBitset_t*, int, int, bool>* value;
+							while(!queueViterbi.pop(value)) {};
+							auto [_deint, _frame, frameZeroCount, locked] = *value;
+
+							if (frameZeroCount > 30) {
+								auto notReset = locked || _frame != 0;
+								auto _viterbi = viterbi.update(*_deint, notReset);
+
+								static std::deque<char> queue;
+								if (!notReset) {
+									queue.clear();
+								}
+								if(!notReset || !inSync) {
+									auto [_inSync, _syncCounter] = synchronize( _viterbi);
+									inSync = _inSync;
+									syncCounter = _syncCounter;
+								}
+								if (inSync) {
+									static auto sync2 {0};
+									auto sbuf = myBufferB_t(3024 - syncCounter);
+									assert(3024 - syncCounter > 0);
+									std::copy(begin(_viterbi) + syncCounter,
+											end(_viterbi),
+											begin(sbuf));
+									for (auto ch : sbuf) {
+										queue.push_back(ch);
+									}
+									if (queue.size() >= 1632) {
+										auto sbuf1 = myBufferB_t(1632);
+										for (auto qi {0}; qi < 1632; qi++) {
+											sbuf1[qi] = queue.front();
+											queue.pop_front();
+										}
+										auto result = descrambler.update(sbuf1);
+										if (syncCounter == 0) {
+											if (sync2++ > 2) {
+												outFile2.write(
+														reinterpret_cast<const char*>(result.data()),
+														result.size());
+											}
+										}
+									}
+									syncCounter = 0;
+								}
+							}
+							delete _deint;
+							delete value;
+						}
+					});
+
+	auto frameZeroCount { 0 };
 	while (inFile.read(reinterpret_cast<char*>(buf.data()),
 			buf.size() * sizeof(myComplex_t))) {
 
@@ -130,9 +195,6 @@ void Rx::rx() {
 //		std::cout << readBytes << std::endl;
 		auto _nco = nco.update(buf, _ifo, f, _rfo);
 		auto [_sync, _f, _locked] = sync.update(_nco, _fto);
-		if (!_locked) {
-			inSync = false;
-		}
 		auto __sro = sro.update(_sync, sync.getSro());
 		f = _f;
 		auto _fft = fft.update(__sro);
@@ -156,47 +218,16 @@ void Rx::rx() {
 			frameZeroCount++;
 		}
 
-		if (frameZeroCount > 30) {
-			auto notReset = inSync || _frame != 0;
-			auto _viterbi = viterbi.update(_deint, notReset);
-//			outFile.write(reinterpret_cast<char*>(_out.data()),
-//					_out.size() * sizeof(myComplex_t));
-
-			auto viterbiEnd = (_frame == 0 ? 0 : 0);
-			getOutputs(outFile1, _viterbi, viterbiEnd);
-			static std::deque<char> queue;
-			if (!notReset) {
-				queue.clear();
-			}
-			if (inSync) {
-				static auto sync2 { 0 };
-				auto sbuf = myBufferB_t(3024 - syncCounter - viterbiEnd);
-				assert(3024 - syncCounter - viterbiEnd > 0);
-				std::copy(begin(_viterbi) + syncCounter,
-						end(_viterbi) - viterbiEnd,
-						begin(sbuf));
-				for (auto ch : sbuf) {
-					queue.push_back(ch);
-				}
-				if (queue.size() >= 1632) {
-					auto sbuf1 = myBufferB_t(1632);
-					for (auto qi { 0 }; qi < 1632; qi++) {
-						sbuf1[qi] = queue.front();
-						queue.pop_front();
-					}
-					auto result = descrambler.update(sbuf1);
-					if (syncCounter == 0) {
-						if (sync2++ > 2) {
-							outFile2.write(
-									reinterpret_cast<const char*>(result.data()),
-									result.size());
-						}
-					}
-				}
-				syncCounter = 0;
-			}
-		}
+		myBitset_t* __deint = new myBitset_t(_deint);
+		auto val = new std::tuple<myBitset_t*, int, int, bool>(__deint, _frame,
+				frameZeroCount, _locked);
+		while (!queueViterbi.push(val))
+			;
 	}
+
+	done = true;
+	viterbiThread.join();
+
 	outFile.close();
 	outFile1.close();
 }
