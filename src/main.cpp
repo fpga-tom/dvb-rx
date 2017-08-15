@@ -1,3 +1,6 @@
+#include <volk/volk.h>
+#include <volk/volk_cpu.h>
+
 #define UNITTEST_SYMBOL
 #include <test/DeinterleaverTest.h>
 #include <test/DemapTest.h>
@@ -190,6 +193,8 @@ int main(int argc, char **argv) {
 	testSro();
 	testRfo();
 #else
+	volk_list_machines();
+	std::cout << volk_get_machine() << std::endl;
 	rx();
 	std::cout << "Rx done" << std::endl;
 #endif

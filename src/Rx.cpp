@@ -34,7 +34,6 @@
 #include <sys/syscall.h>
 #include <sys/types.h>
 
-
 namespace dvb {
 
 Rx::Rx(const myConfig_t& c, const std::string& cf, const std::string& of) :
@@ -91,7 +90,7 @@ std::tuple<bool, myInteger_t> Rx::synchronize(const myBufferB_t& out) {
 }
 
 void Rx::rx() {
-	auto traceback = 16;
+	auto traceback = 9;
 	auto sync = Sync { config };
 	auto nco = Nco { config };
 	auto sro = SamplingFrequencyOffset { config };
@@ -106,7 +105,7 @@ void Rx::rx() {
 	auto viterbi = ViterbiDecoderSSE { config, traceback };
 	auto descrambler = Descrambler { config };
 	auto inFile = std::ifstream(cfile);
-	auto buf = myBuffer_t(config.sym_len);
+
 	auto c { 0 };
 
 	auto _ifo { 0.f };
@@ -121,10 +120,13 @@ void Rx::rx() {
 	auto _sro { 0.f };
 	auto _rfo { 0.f };
 	auto readBytes { 0 };
-	auto coeff = std::sqrt(42.0f);
+	auto coeff = lv_cmake(std::sqrt(42.0f), 0.f);
 
 	boost::lockfree::spsc_queue<std::tuple<myBitset_t*, int, int, bool>*,
 			boost::lockfree::capacity<64>> queueViterbi;
+
+	boost::lockfree::spsc_queue<std::tuple<myBuffer_t*, myBuffer_t*, bool>*,
+			boost::lockfree::capacity<64>> queueSync;
 
 	auto done = boost::atomic<bool>(false);
 
@@ -145,31 +147,28 @@ void Rx::rx() {
 								auto notReset = locked || _frame != 0;
 								auto _viterbi = viterbi.update(*_deint, notReset);
 
-								static std::deque<char> queue;
-								if (!notReset) {
-									queue.clear();
-								}
+								static auto sbufCounter {0};
+
 								if(!notReset || !inSync) {
 									auto [_inSync, _syncCounter] = synchronize( _viterbi);
 									inSync = _inSync;
 									syncCounter = _syncCounter;
+									sbufCounter = 0;
 								}
 								if (inSync) {
 									static auto sync2 {0};
-									auto sbuf = myBufferB_t(3024 - syncCounter);
+									static auto sbuf = myBufferB_t(3024*2);
 									assert(3024 - syncCounter > 0);
+									auto count = 3024 - syncCounter;
+									assert(count > 0);
 									std::copy(begin(_viterbi) + syncCounter,
-											end(_viterbi),
-											begin(sbuf));
-									for (auto ch : sbuf) {
-										queue.push_back(ch);
-									}
-									if (queue.size() >= 1632) {
+											begin(_viterbi) + count + syncCounter,
+											begin(sbuf) + sbufCounter);
+									sbufCounter += count;
+
+									while (sbufCounter >= 1632) {
 										auto sbuf1 = myBufferB_t(1632);
-										for (auto qi {0}; qi < 1632; qi++) {
-											sbuf1[qi] = queue.front();
-											queue.pop_front();
-										}
+										std::copy(begin(sbuf), begin(sbuf) + 1632, begin(sbuf1));
 										auto result = descrambler.update(sbuf1);
 										if (syncCounter == 0) {
 											if (sync2++ > 2) {
@@ -178,7 +177,10 @@ void Rx::rx() {
 														result.size());
 											}
 										}
+										std::copy(begin(sbuf) + 1632, begin(sbuf) + sbufCounter, begin(sbuf));
+										sbufCounter -= 1632;
 									}
+									std::copy(begin(_viterbi) + count + syncCounter, end(_viterbi), begin(sbuf) + sbufCounter);
 									syncCounter = 0;
 								}
 							}
@@ -187,49 +189,80 @@ void Rx::rx() {
 						}
 					});
 
+	auto syncThread =
+			std::thread(
+					[&]() {
+						auto buf = myBuffer_t(config.sym_len);
+						while (inFile.read(reinterpret_cast<char*>(buf.data()),
+										buf.size() * sizeof(myComplex_t))) {
+
+							auto _nco = nco.update(buf, _ifo, f, _rfo);
+							auto [_sync, _f, _locked] = sync.update(_nco, _fto);
+							auto __sro = sro.update(_sync, sync.getSro());
+							f = _f;
+							auto _fft = fft.update(__sro);
+							_sro = sro.sro(_fft);
+							_rfo = sro.rfo(_fft);
+							_ifo = ifo.update(_fft);
+							auto [_eq, _cpilots] = eq.update(_fft);
+							_fto = fto.update(_cpilots);
+
+							auto out = new myBuffer_t(_eq);
+							auto outfft = new myBuffer_t(_fft);
+							auto val = new std::tuple<myBuffer_t*, myBuffer_t*, bool>(out, outfft, _locked);
+
+							while (!queueSync.push(val))
+							;
+						}
+						done = true;
+						exit(0);
+					});
+
 	auto frameZeroCount { 0 };
-	while (inFile.read(reinterpret_cast<char*>(buf.data()),
-			buf.size() * sizeof(myComplex_t))) {
 
-		readBytes += buf.size() * sizeof(myComplex_t);
-//		std::cout << readBytes << std::endl;
-		auto _nco = nco.update(buf, _ifo, f, _rfo);
-		auto [_sync, _f, _locked] = sync.update(_nco, _fto);
-		auto __sro = sro.update(_sync, sync.getSro());
-		f = _f;
-		auto _fft = fft.update(__sro);
-		_sro = sro.sro(_fft);
-		_rfo = sro.rfo(_fft);
-		_ifo = ifo.update(_fft);
-		auto [_eq, _cpilots] = eq.update(_fft);
-		_fto = fto.update(_cpilots);
-		auto _frame = ds.frameNum(_eq);
-		auto _eqs = eqs.update(_fft, _frame);
-		auto _ds = ds.update(_eqs, _frame);
-		auto _mul = myBuffer_t(config.data_carrier_count);
-		std::transform(begin(_ds), end(_ds), begin(_mul), [&](auto a) {
-			return a * coeff;
-		});
-		auto _dem = dem.update(_mul);
-		auto _deint = deint.update(_dem, _frame);
-		auto _out = _ds;
+	auto demapThread =
+			std::thread(
+					[&]() {
 
-		if (_frame == 0) {
-			frameZeroCount++;
-		}
+						while(!done) {
+							std::tuple<myBuffer_t*, myBuffer_t*, bool> *value;
+							while(!queueSync.pop(value))
+							;
+							auto [_eq, _fft, _locked] = *value;
+							auto _frame = ds.frameNum(*_eq);
+							auto _eqs = eqs.update(*_fft, _frame);
+							auto _ds = ds.update(_eqs, _frame);
+							auto _mul = myBuffer_t(config.data_carrier_count);
 
-		myBitset_t* __deint = new myBitset_t(_deint);
-		auto val = new std::tuple<myBitset_t*, int, int, bool>(__deint, _frame,
-				frameZeroCount, _locked);
-		while (!queueViterbi.push(val))
-			;
-	}
+							volk_32fc_s32fc_multiply_32fc(_mul.data(), _ds.data(), coeff,
+									config.data_carrier_count);
 
-	done = true;
+							auto _dem = dem.update(_mul);
+							auto _deint = deint.update(_dem, _frame);
+							auto _out = _ds;
+
+							if (_frame == 0) {
+								frameZeroCount++;
+							}
+
+							myBitset_t* __deint = new myBitset_t(_deint);
+							auto val = new std::tuple<myBitset_t*, int, int, bool>(__deint, _frame,
+									frameZeroCount, _locked);
+							while (!queueViterbi.push(val))
+							;
+							delete _eq;
+							delete _fft;
+							delete value;
+						}
+					});
+
+	syncThread.join();
 	viterbiThread.join();
+	demapThread.join();
 
 	outFile.close();
 	outFile1.close();
+	outFile2.close();
 }
 
 }

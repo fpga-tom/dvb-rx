@@ -17,7 +17,7 @@
 namespace dvb {
 
 EqualizerSpilots::EqualizerSpilots(const myConfig_t& c) :
-		config { c } {
+		config { c }, scatteredPilotsInverse(std::vector<myBuffer_t>(4)) {
 	inBufInverse = reinterpret_cast<fftwf_complex*>(fftwf_malloc(
 			sizeof(fftwf_complex) * config.scattered_pilots_count));
 	outBufInverse = reinterpret_cast<fftwf_complex*>(fftwf_malloc(
@@ -33,6 +33,21 @@ EqualizerSpilots::EqualizerSpilots(const myConfig_t& c) :
 
 	planForward = fftwf_plan_dft_1d(config.carriers, inBufForward,
 			outBufForward, FFTW_FORWARD, FFTW_ESTIMATE);
+
+	for (auto frame { 0 }; frame < 4; frame++) {
+		auto tmp = myBufferR_t(config.scattered_pilots_count);
+		std::transform(begin(config.scattered_pilots_value[frame]),
+				end(config.scattered_pilots_value[frame]),
+				begin(tmp), [](auto v) {
+					return 1.0f/ v;
+				});
+		scatteredPilotsInverse[frame] = myBuffer_t(
+				config.scattered_pilots_count);
+		auto it = begin(scatteredPilotsInverse[frame]);
+		for (auto c : tmp) {
+			*it++ = myComplex_t { c, 0.f };
+		}
+	}
 }
 
 EqualizerSpilots::~EqualizerSpilots() {
@@ -61,12 +76,10 @@ myBuffer_t EqualizerSpilots::update(const myBuffer_t& in, int frame) {
 
 	assert(spilots.size() == config.scattered_pilots_count);
 	// calculate cir
-	auto c = begin(config.scattered_pilots_value[frame]);
-	std::transform(begin(spilots), end(spilots),
-			reinterpret_cast<myComplex_t*>(inBufInverse), [&](auto v) {
-//				return v * std::conj(*c++);
-			return v / (*c++);
-			});
+	volk_32fc_x2_multiply_32fc(reinterpret_cast<lv_32fc_t*>(inBufInverse),
+			spilots.data(),
+			scatteredPilotsInverse[frame].data(),
+			config.scattered_pilots_count);
 
 	// interpolate cir
 	fftwf_execute(planInverse);

@@ -47,14 +47,14 @@ myBuffer_t Sync::correlate(const myBuffer_t& in, myBuffer_t& delay,
 	assert(in.size() == config.sym_len);
 	assert(in.size() == b.size());
 
-	std::transform(begin(in), end(in), begin(delay) + config.fft_len,
-			[](auto s) {
-				return conj(s);
-			});
+	std::copy(begin(in), end(in), begin(delay) + config.fft_len);
 
-	std::transform(begin(in), end(in), begin(delay), begin(b),
-			[&](auto sample, auto delayedSample) {
-				auto prod = sample * delayedSample;
+	volk_32fc_x2_multiply_conjugate_32fc(b.data(), in.data(), delay.data(), config.sym_len);
+
+	std::copy(begin(delay) + config.sym_len, end(delay), begin(delay));
+
+	std::transform(begin(b), end(b),  begin(b),
+			[&](auto prod) {
 				acc = acc + prod;
 				acc = acc - accDelay.front();
 				accDelay.pop_front();
@@ -63,7 +63,6 @@ myBuffer_t Sync::correlate(const myBuffer_t& in, myBuffer_t& delay,
 				return acc;
 			});
 
-	std::copy(begin(delay) + config.sym_len, end(delay), begin(delay));
 
 	return b;
 }

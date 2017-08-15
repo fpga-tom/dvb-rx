@@ -18,51 +18,33 @@
 namespace dvb {
 
 FineTimingOffset::FineTimingOffset(const myConfig_t& c) :
-		config { c } {
+		config { c }, x (config.continual_pilots_count - 1) {
+
+			std::transform(begin(config.continual_pilots_value),
+						end(config.continual_pilots_value) - 1,
+						begin(config.continual_pilots_value) + 1, begin(x),
+						[](auto a, auto b) {
+							return std::conj(a) * b;
+						});
 }
 
 FineTimingOffset::~FineTimingOffset() {
-//	fftwf_free(inBuf);
-//	fftwf_free(outBuf);
-//	fftwf_destroy_plan(plan);
 }
 
-// wrap to [-pi,pi]
-double angle_norm(double x) {
-	x = std::remainder(x + .5 * M_PI, 1.0 * M_PI);
-	if (x < 0)
-		x += M_PI;
-	return x - .5 * M_PI;
-}
-
-double phase_unwrap(double prev, double now) {
-	return prev + angle_norm(now - prev);
-}
 
 myReal_t FineTimingOffset::update(const myBuffer_t& in) {
 	assert(in.size() == config.continual_pilots_count);
 	auto z = myBuffer_t(config.continual_pilots_count - 1);
-	auto x = myBuffer_t(config.continual_pilots_count - 1);
 	auto y = myBuffer_t(config.continual_pilots_count - 1);
 
 
-	std::transform(begin(in), end(in) - 1, begin(in) + 1, begin(z),
-			[](auto a, auto b) {
-				return std::conj(a) * b;
-			});
+	std::copy(begin(in) + 1, end(in), begin(y));
 
-	std::transform(begin(config.continual_pilots_value),
-			end(config.continual_pilots_value) - 1,
-			begin(config.continual_pilots_value) + 1, begin(x),
-			[](auto a, auto b) {
-				return std::conj(a) * b;
-			});
+	volk_32fc_x2_multiply_conjugate_32fc(z.data(), y.data(), in.data(), config.continual_pilots_count -1);
 
-	std::transform(begin(x), end(x), begin(z), begin(y), [](auto a, auto b) {
-		return std::conj(a) * b;
-	});
+	auto acc =  myComplex_t { 0.f, 0.f };
+	volk_32fc_x2_conjugate_dot_prod_32fc(&acc, z.data(), x.data(), config.continual_pilots_count - 1);
 
-	auto acc = std::accumulate(begin(y), end(y), myComplex_t { 0, 0 });
 	auto result = (config.fft_len) * std::arg(acc) / 2.0 / M_PI;
 	return result;
 }

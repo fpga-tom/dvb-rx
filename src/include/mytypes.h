@@ -13,17 +13,18 @@
 #include <complex>
 #include <deque>
 #include <vector>
+#include <MyAllocator.h>
 
 const int bitCount  = 36288;
 
 using myReal_t = float;
 using myInteger_t = int;
 using myComplex_t = std::complex<myReal_t>;
-using myBuffer_t = std::vector<myComplex_t>;
-using myBufferR_t = std::vector<myReal_t>;
-using myBufferB_t = std::vector<unsigned char>;
-using myBufferI_t = std::vector<myInteger_t>;
-using myDelay_t = std::deque<myComplex_t>;
+using myBuffer_t = std::vector<myComplex_t, dvb::MyAllocator<myComplex_t>>;
+using myBufferR_t = std::vector<myReal_t, dvb::MyAllocator<myReal_t>>;
+using myBufferB_t = std::vector<unsigned char, dvb::MyAllocator<unsigned char>>;
+using myBufferI_t = std::vector<myInteger_t, dvb::MyAllocator<myInteger_t>>;
+using myDelay_t = std::deque<myComplex_t, dvb::MyAllocator<myComplex_t>>;
 using myBitset_t = std::bitset<bitCount>;
 
 typedef struct {
