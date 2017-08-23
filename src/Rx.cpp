@@ -5,11 +5,11 @@
  *      Author: tomas1
  */
 
+
 #include <DataSelector.h>
 #include <Deinterleaver.h>
 #include <Demap.h>
 #include <Descrambler.h>
-#include <ext/type_traits.h>
 #include <Equalizer.h>
 #include <EqualizerSpilots.h>
 #include <Fft.h>
@@ -17,20 +17,31 @@
 #include <IntegerFrequencyOffset.h>
 #include <Nco.h>
 #include <Rx.h>
+#include <syscall.h>
 #include <SamplingFrequencyOffset.h>
 #include <Sync.h>
+#include <unistd.h>
+#include <volk/volk.h>
+#include <volk/volk_complex.h>
 #include <ViterbiDecoderSSE.h>
-#include <algorithm>
+#include <cassert>
 #include <cmath>
+#include <complex>
+#include <cstdlib>
 #include <fstream>
 #include <iterator>
+#include <thread>
+#include <tuple>
 #include <vector>
-#include <cassert>
+
+#include <boost/atomic/detail/atomic_template.hpp>
+#include <boost/lockfree/policies.hpp>
+#include <boost/lockfree/spsc_queue.hpp>
 
 namespace dvb {
 
 Rx::Rx(const myConfig_t& c, const std::string& cf, const std::string& of) :
-		config { c }, cfile { cf }, ofile { of }, inSync { 0 }, syncCounter { -1 } {
+		config { c }, cfile { cf }, ofile { of } {
 
 	q0 = std::deque<bool>(204 * 8);
 	q1 = std::deque<bool>(204 * 7);
@@ -45,13 +56,14 @@ Rx::Rx(const myConfig_t& c, const std::string& cf, const std::string& of) :
 Rx::~Rx() {
 }
 
-void Rx::getOutputs(std::ofstream& outFile1, myBufferB_t& out, int to_out) {
+std::tuple<bool, myInteger_t> Rx::synchronize(const myBufferB_t& out) {
 
-//	std::cout << std::endl;
+	auto inSync = false;
+	auto syncCounter = 0;
+
 	if (!inSync) {
-		for (auto it { 0 }; it < out.size() - to_out; it++) {
+		for (auto it { 0 }; it < out.size(); it++) {
 			auto a = out[it];
-//		printf("%X", a);
 			if (!inSync) {
 				inSync = q0.front() && q1.front() && q2.front() && q3.front()
 						&& q4.front() && q5.front() && q6.front() && q7.front();
@@ -78,16 +90,7 @@ void Rx::getOutputs(std::ofstream& outFile1, myBufferB_t& out, int to_out) {
 
 		}
 	}
-
-//	if (inSync) {
-//		outFile1.write(
-//				reinterpret_cast<const char*>(out.data() + syncCounter),
-//				out.size() - syncCounter - to_out);
-////		outFile1.write(
-////				reinterpret_cast<const char*>(rtObj.rtY.decoderOut)
-////				+ syncCounter, 189 - syncCounter);
-////		syncCounter = 0;
-//	}
+	return {inSync, syncCounter};
 }
 
 void Rx::rx() {
@@ -106,7 +109,7 @@ void Rx::rx() {
 	auto viterbi = ViterbiDecoderSSE { config, traceback };
 	auto descrambler = Descrambler { config };
 	auto inFile = std::ifstream(cfile);
-	auto buf = myBuffer_t(config.sym_len);
+
 	auto c { 0 };
 
 	auto _ifo { 0.f };
@@ -118,87 +121,181 @@ void Rx::rx() {
 	auto outFile1 = std::ofstream { ofile + "viterbi", std::ios::binary };
 	auto outFile2 = std::ofstream { ofile + "ts", std::ios::binary };
 
-	auto frameZeroCount { 0 };
 	auto _sro { 0.f };
 	auto _rfo { 0.f };
 	auto readBytes { 0 };
-	auto coeff = std::sqrt(42.0f);
-	while (inFile.read(reinterpret_cast<char*>(buf.data()),
-			buf.size() * sizeof(myComplex_t))) {
+	auto coeff = lv_cmake(std::sqrt(42.0f), 0.f);
 
-		readBytes += buf.size() * sizeof(myComplex_t);
-//		std::cout << readBytes << std::endl;
-		auto _nco = nco.update(buf, _ifo, f, _rfo);
-		auto [_sync, _f, _locked] = sync.update(_nco, _fto + _sro);
-		if (!_locked) {
-			inSync = false;
-		}
-		auto __sro = sro.update(_sync, sync.getSro());
-		f = _f;
-		auto _fft = fft.update(__sro);
-		_sro = sro.sro(_fft);
-		_rfo = sro.rfo(_fft);
-		_ifo = ifo.update(_fft);
-		auto [_eq, _cpilots] = eq.update(_fft);
-		_fto = fto.update(_cpilots);
-		auto _frame = ds.frameNum(_eq);
-		auto _eqs = eqs.update(_fft, _frame);
-		auto _ds = ds.update(_eqs, _frame);
-		auto _mul = myBuffer_t(config.data_carrier_count);
-		std::transform(begin(_ds), end(_ds), begin(_mul), [&](auto a) {
-			return a * coeff;
-		});
-		auto _dem = dem.update(_mul);
-		auto _deint = deint.update(_dem, _frame);
-		auto _out = _ds;
+	boost::lockfree::spsc_queue<std::tuple<myBitset_t*, int, int, bool>*,
+			boost::lockfree::capacity<128>> queueViterbi;
 
-		if (_frame == 0) {
-			frameZeroCount++;
-		}
+	boost::lockfree::spsc_queue<std::tuple<myBuffer_t*, myBuffer_t*, bool>*,
+			boost::lockfree::capacity<128>> queueSync;
 
-		if (frameZeroCount > 30) {
-			auto notReset = inSync || _frame != 0;
-			auto _viterbi = viterbi.update(_deint, notReset);
-//			outFile.write(reinterpret_cast<char*>(_out.data()),
-//					_out.size() * sizeof(myComplex_t));
+	boost::lockfree::spsc_queue<std::tuple<myBufferB_t*, myInteger_t, bool>*,
+			boost::lockfree::capacity<128>> queueReedSolomon;
 
-			auto viterbiEnd = (_frame == 0 ? 0 : 0);
-			getOutputs(outFile1, _viterbi, viterbiEnd);
-			static std::deque<char> queue;
-			if (!notReset) {
-				queue.clear();
-			}
-			if (inSync) {
-				static auto sync2 { 0 };
-				auto sbuf = myBufferB_t(3024 - syncCounter - viterbiEnd);
-				assert(3024 - syncCounter - viterbiEnd > 0);
-				std::copy(begin(_viterbi) + syncCounter,
-						end(_viterbi) - viterbiEnd,
-						begin(sbuf));
-				for (auto ch : sbuf) {
-					queue.push_back(ch);
-				}
-				if (queue.size() >= 1632) {
-					auto sbuf1 = myBufferB_t(1632);
-					for (auto qi { 0 }; qi < 1632; qi++) {
-						sbuf1[qi] = queue.front();
-						queue.pop_front();
-					}
-					auto result = descrambler.update(sbuf1);
-					if (syncCounter == 0) {
-						if (sync2++ > 2) {
-							outFile2.write(
-									reinterpret_cast<const char*>(result.data()),
-									result.size());
+	auto done = boost::atomic<bool>(false);
+
+	auto reedSolomonThread = std::thread([&]() {
+						std::cout << "reedSolomon thread id: " << syscall(SYS_gettid) << std::endl;
+						static auto sync2 {0};
+						while(!done) {
+							std::tuple<myBufferB_t*, myInteger_t, bool>* value;
+							while(!queueReedSolomon.pop(value)) {};
+							auto [sbuf1, syncCounter, locked] = *value;
+
+							if(!locked) {
+								sync2 = 0;
+							}
+
+							auto result = descrambler.update(*sbuf1);
+							if (syncCounter == 0) {
+								if (sync2++ > 2) {
+									outFile2.write(
+											reinterpret_cast<const char*>(result.data()),
+											result.size());
+								}
+							}
+							delete sbuf1;
+							delete value;
 						}
-					}
-				}
-				syncCounter = 0;
-			}
-		}
-	}
+	});
+
+	auto viterbiThread =
+			std::thread(
+					[&]() {
+
+						std::cout << "viterbi thread id: " << syscall(SYS_gettid) << std::endl;
+
+						auto inSync = false;
+						auto syncCounter = 0;
+						while(!done) {
+							std::tuple<myBitset_t*, int, int, bool>* value;
+							while(!queueViterbi.pop(value)) {};
+							auto [_deint, _frame, frameZeroCount, locked] = *value;
+
+							if (frameZeroCount > 30) {
+								auto notReset = locked || _frame != 0;
+								auto _viterbi = viterbi.update(*_deint, notReset);
+
+								static auto sbufCounter {0};
+
+								if(!notReset || !inSync) {
+									auto [_inSync, _syncCounter] = synchronize( _viterbi);
+									inSync = _inSync;
+									syncCounter = _syncCounter;
+									sbufCounter = 0;
+								}
+								if (inSync) {
+									static auto sbuf = myBufferB_t(3024*2);
+									assert(3024 - syncCounter > 0);
+									auto count = 3024 - syncCounter;
+									assert(count > 0);
+									std::copy(begin(_viterbi) + syncCounter,
+											begin(_viterbi) + count + syncCounter,
+											begin(sbuf) + sbufCounter);
+									sbufCounter += count;
+
+									while (sbufCounter >= 1632) {
+										auto sbuf1 = myBufferB_t(1632);
+										std::copy(begin(sbuf), begin(sbuf) + 1632, begin(sbuf1));
+
+										auto out = new myBufferB_t(sbuf1);
+										auto val = new std::tuple<myBufferB_t*, myInteger_t, bool>(out, syncCounter, locked);
+
+										while (!queueReedSolomon.push(val))
+										;
+
+										std::copy(begin(sbuf) + 1632, begin(sbuf) + sbufCounter, begin(sbuf));
+										sbufCounter -= 1632;
+									}
+									std::copy(begin(_viterbi) + count + syncCounter, end(_viterbi), begin(sbuf) + sbufCounter);
+									syncCounter = 0;
+								}
+							}
+							delete _deint;
+							delete value;
+						}
+					});
+
+	auto syncThread =
+			std::thread(
+					[&]() {
+						std::cout << "sync thread id: " << syscall(SYS_gettid) << std::endl;
+						auto buf = myBuffer_t(config.sym_len);
+						while (inFile.read(reinterpret_cast<char*>(buf.data()),
+										buf.size() * sizeof(myComplex_t))) {
+
+							auto _nco = nco.update(buf, _ifo, f, _rfo);
+							auto [_sync, _f, _locked] = sync.update(_nco, _fto);
+							auto __sro = sro.update(_sync, sync.getSro());
+							f = _f;
+							auto _fft = fft.update(__sro);
+							_sro = sro.sro(_fft);
+							_rfo = sro.rfo(_fft);
+							_ifo = ifo.update(_fft);
+							auto [_eq, _cpilots] = eq.update(_fft);
+							_fto = fto.update(_cpilots);
+
+							auto out = new myBuffer_t(_eq);
+							auto outfft = new myBuffer_t(_fft);
+							auto val = new std::tuple<myBuffer_t*, myBuffer_t*, bool>(out, outfft, _locked);
+
+							while (!queueSync.push(val))
+							;
+						}
+						done = true;
+						exit(0);
+					});
+
+	auto frameZeroCount { 0 };
+
+	auto demapThread =
+			std::thread(
+					[&]() {
+
+						std::cout << "demap thread id: " << syscall(SYS_gettid) << std::endl;
+						while(!done) {
+							std::tuple<myBuffer_t*, myBuffer_t*, bool> *value;
+							while(!queueSync.pop(value))
+							;
+							auto [_eq, _fft, _locked] = *value;
+							auto _frame = ds.frameNum(*_eq);
+							auto _eqs = eqs.update(*_fft, _frame);
+							auto _ds = ds.update(_eqs, _frame);
+							auto _mul = myBuffer_t(config.data_carrier_count);
+
+							volk_32fc_s32fc_multiply_32fc(_mul.data(), _ds.data(), coeff,
+									config.data_carrier_count);
+
+							auto _dem = dem.update(_mul);
+							auto _deint = deint.update(_dem, _frame);
+							auto _out = _ds;
+
+							if (_frame == 0) {
+								frameZeroCount++;
+							}
+
+							myBitset_t* __deint = new myBitset_t(_deint);
+							auto val = new std::tuple<myBitset_t*, int, int, bool>(__deint, _frame,
+									frameZeroCount, _locked);
+							while (!queueViterbi.push(val))
+							;
+							delete _eq;
+							delete _fft;
+							delete value;
+						}
+					});
+
+	syncThread.join();
+	viterbiThread.join();
+	demapThread.join();
+	reedSolomonThread.join();
+
 	outFile.close();
 	outFile1.close();
+	outFile2.close();
 }
 
 }

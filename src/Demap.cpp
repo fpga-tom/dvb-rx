@@ -50,7 +50,7 @@ myBitset_t Demap::update(const myBuffer_t& complex) {
 			d = d >> 1;
 		}
 	}
-	assert(result.size() == config.data_carrier_count * 6);
+	assert(it == config.data_carrier_count * 6);
 	return result;
 }
 

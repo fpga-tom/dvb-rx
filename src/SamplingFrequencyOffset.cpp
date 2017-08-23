@@ -142,38 +142,39 @@ myBuffer_t SamplingFrequencyOffset::filter(const myBuffer_t& complex,
 
 	myComplex_t mid { 0.f, 0.f };
 	myBufferR_t cof = coeff(sro);
+	auto cof1 = myBufferR_t(cof.size());
+	auto cof2 = myBufferR_t(cof.size());
+
+	std::copy(rbegin(cof)+1, rend(cof), begin(cof1));
+	std::transform(begin(cof) + 1, end(cof), begin(cof2), [](auto b) {
+		return -b;
+	});
 
 	auto count { 0 };
 
+	auto data1 = myBuffer_t(delayB.size());
+	auto data2 = myBuffer_t(delayA.size());
+
 	for (auto sample : complex) {
 
-		std::transform(begin(delayB), end(delayB),
-				rbegin(cof) + 1, begin(tmp),
-			[&](auto a, auto b) {
-				return a * b;
-			});
+		auto sum1 = myComplex_t { 0.f, 0.f };
+		auto sum2 = myComplex_t { 0.f, 0.f };
 
-		std::transform(begin(delayA), end(delayA),
-				begin(cof) + 1,
-				begin(tmp1),
-				[&](auto a, auto b) {
-					return a * -b;
-				});
+		std::copy(begin(delayB), end(delayB), begin(data1));
+		std::copy(begin(delayA), end(delayA), begin(data2));
+
+		volk_32fc_32f_dot_prod_32fc(&sum1, data1.data(), cof1.data(), data1.size());
+		volk_32fc_32f_dot_prod_32fc(&sum2, data2.data(), cof2.data(), data2.size());
 
 		delayB.pop_back();
 		delayB.push_front(sample);
-
-		assert(!isnanf(cof[SRO_N]));
-		auto sum1 = std::accumulate(begin(tmp), end(tmp), myComplex_t { 0, 0 });
-		auto sum2 = std::accumulate(begin(tmp1), end(tmp1),
-				myComplex_t { 0, 0 });
 
 		mid = sum1 + sum2 + sample * cof[SRO_N];
 
 		delayA.pop_back();
 		delayA.push_front(mid);
 		count++;
-		if (count > (SRO_N)) {
+		if (count >= (SRO_N)) {
 			*it++ = mid;
 		}
 	}
@@ -183,7 +184,6 @@ myBuffer_t SamplingFrequencyOffset::filter(const myBuffer_t& complex,
 myBuffer_t SamplingFrequencyOffset::update(const myBuffer_t& complex,
 		const myReal_t _sro) {
 	assert(complex.size() == config.sym_len);
-//	auto co = coeff(_sro);
 	auto result = filter(complex, _sro);
 	return result;
 }

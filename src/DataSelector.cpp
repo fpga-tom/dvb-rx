@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <cassert>
 #include <complex>
+#include <iostream>
 #include <iterator>
 #include <numeric>
 #include <vector>
@@ -71,8 +72,11 @@ int DataSelector::frameNum(const myBuffer_t& in) {
 	}
 
 	auto max = std::max_element(begin(maxs), end(maxs));
-	return std::distance(begin(maxs), max);
+	auto result = std::distance(begin(maxs), max);
+	assert(result >= 0);
+	assert(result < 4);
 
+	return result;
 }
 
 myBuffer_t DataSelector::update(const myBuffer_t& in,

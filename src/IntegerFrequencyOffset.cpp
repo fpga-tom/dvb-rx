@@ -31,15 +31,22 @@ int IntegerFrequencyOffset::update(myBuffer_t& in) {
 	for (auto i { low }; i <= hi; i++) {
 
 		auto base { config.zeros_left + i };
-		auto tmp = myBuffer_t(config.continual_pilots_count);
+		auto tmp1 = myBuffer_t(config.continual_pilots_count);
+		auto tmp2 = myBuffer_t(config.continual_pilots_count);
+
 		std::transform(begin(config.continual_pilots),
-				end(config.continual_pilots), begin(tmp), [&](auto t) {
-					auto arg0 = in[base + t];
-					auto arg1 = prev[base + t];
-					return arg0 * std::conj(arg1);
+				end(config.continual_pilots), begin(tmp1), [&](auto t) {
+					return in[base + t];
 				});
-		auto acc = std::accumulate(begin(tmp), end(tmp),
-				myComplex_t { 0, 0 });
+
+		std::transform(begin(config.continual_pilots),
+				end(config.continual_pilots), begin(tmp2), [&](auto t) {
+					return prev[base + t];
+		});
+
+		auto acc = myComplex_t { 0.f, 0.f };
+		volk_32fc_x2_conjugate_dot_prod_32fc(&acc, tmp1.data(), tmp2.data(), config.continual_pilots_count);
+
 		maxs[i + hi] = std::abs(acc);
 	}
 

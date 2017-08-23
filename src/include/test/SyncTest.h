@@ -20,6 +20,7 @@ public:
 	virtual ~SyncTest();
 	void testCorrelation();
 	void testAlign();
+	void testPeak();
 };
 
 }

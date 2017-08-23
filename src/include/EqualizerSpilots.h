@@ -26,6 +26,8 @@ class EqualizerSpilots {
 	fftwf_complex *inBufForward, *outBufForward;
 	fftwf_plan_s *planForward;
 
+	std::vector<myBuffer_t> scatteredPilotsInverse;
+
 	// helper methods
 	myBuffer_t selSpilots(const myBuffer_t&, int frame);
 public:

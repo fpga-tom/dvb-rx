@@ -19,9 +19,9 @@
 namespace dvb {
 
 const myReal_t SYNC_P_GAIN = 1e-10;
-const myReal_t SYNC_I_GAIN = 1e-7;
+const myReal_t SYNC_I_GAIN = 5e-4;
 
-const int lockCount = 3;
+const myInteger_t lockCount = 5;
 
 /**
  * Takes input stream of complex samples and generates
@@ -39,7 +39,7 @@ class Sync {
 	unsigned long current_size;
 
 	// peak finder variables
-	std::deque<int> peakDelay;
+	std::deque<myInteger_t> peakDelay;
 	int accPeak;
 	myReal_t integral;
 	myReal_t peak;
@@ -65,10 +65,10 @@ public:
 			const myReal_t);
 	myReal_t getSro() const {
 		static auto integral = 0.f;
-		auto diff = (std::round(peak) - peak);
+		auto diff = (std::floor(peak) - peak);
 		integral += diff * 2e-3;
 //		return diff * 1e-5 + integral;
-		return diff;
+		return 1 + diff;
 	}
 };
 
