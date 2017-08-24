@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vivadoHLSLog:LogRoot xmlns:vivadoHLSLog="www.xilinx.com/vivadoHLSLog">
+  <errorLogs>
+    <logs>
+      <synLog/>
+      <simLog/>
+      <mgLog/>
+      <packageLog/>
+      <csimLog/>
+    </logs>
+  </errorLogs>
+  <warningLogs>
+    <logs>
+      <synLog>
+        <logs message="WARNING: [RTGEN 206-101] Register 'acc_M_imag_V' is power-on initialization." projectName="rx" solutionName="solution1" date="2017-08-24T19:26:31.555+0000" type="Warning"/>
+        <logs message="WARNING: [RTGEN 206-101] Register 'acc_M_real_V' is power-on initialization." projectName="rx" solutionName="solution1" date="2017-08-24T19:26:31.533+0000" type="Warning"/>
+        <logs message="WARNING: [RTGEN 206-101] Register 'accDelayHead' is power-on initialization." projectName="rx" solutionName="solution1" date="2017-08-24T19:26:31.528+0000" type="Warning"/>
+        <logs message="WARNING: [RTGEN 206-101] Register 'delayHead' is power-on initialization." projectName="rx" solutionName="solution1" date="2017-08-24T19:26:31.524+0000" type="Warning"/>
+        <logs message="WARNING: [SCHED 204-68] Unable to enforce a carried dependence constraint (II = 1, distance = 1, offset = 1)&#xA;   between 'store' operation (rx/.apc/.src/Sync.cpp:28) of variable '__r._M_imag.V', rx/.apc/.src/Sync.cpp:24 on array 'accDelay_M_imag_V' and 'load' operation ('__y._M_imag.V', rx/.apc/.src/Sync.cpp:25) on array 'accDelay_M_imag_V'." projectName="rx" solutionName="solution1" date="2017-08-24T19:26:31.358+0000" type="Warning"/>
+        <logs message="WARNING: [SYN 201-103] Top function name 'Sync::correlate' is not a legal RTL name and is changed to 'Sync_correlate'; this may result in automatic C/RTL co-simulation failure." projectName="rx" solutionName="solution1" date="2017-08-24T19:26:31.279+0000" type="Warning"/>
+        <logs message="WARNING: [SYN 201-103] Top function name 'Sync::correlate' is not a legal RTL name." projectName="rx" solutionName="solution1" date="2017-08-24T19:26:31.269+0000" type="Warning"/>
+        <logs message="WARNING: [SYNCHK 200-77] Found opaque type argument 'this' of top function 'Sync::correlate'. Possible causes are: (1) the argument is passed by reference; (2) the argument is never used in the function; (3) the argument is of templated class type. " projectName="rx" solutionName="solution1" date="2017-08-24T19:26:28.498+0000" type="Warning"/>
+      </synLog>
+      <simLog/>
+      <mgLog/>
+      <packageLog/>
+      <csimLog/>
+    </logs>
+  </warningLogs>
+</vivadoHLSLog:LogRoot>

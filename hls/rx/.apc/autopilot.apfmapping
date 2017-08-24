@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<autopilotfilemapping:AutoPilotFileMapping xmlns:autopilotfilemapping="www.autoesl.com/autopilotfilemapping">
+  <source>
+    <originFiles name="Sync.h" path="/opt/dvb-rx/hls/rx/.apc/.src/Sync.h"/>
+    <originFiles name="config.h" path="/opt/dvb-rx/hls/rx/.apc/.src/config.h"/>
+    <originFiles name="main.cpp" path="/opt/dvb-rx/hls/rx/.apc/.src/main.cpp"/>
+  </source>
+  <testbench/>
+</autopilotfilemapping:AutoPilotFileMapping>
