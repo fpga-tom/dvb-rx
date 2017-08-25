@@ -5,10 +5,10 @@
 ############################################################
 open_project rx
 set_top Sync::correlate
-add_files rx/.apc/.src/Sync.cpp
-add_files rx/.apc/.src/Sync.h
-add_files rx/.apc/.src/config.h
-add_files rx/.apc/.src/main.cpp
+add_files rx/src/Sync.cpp
+add_files rx/src/Sync.h
+add_files rx/src/config.h
+add_files rx/src/main.cpp
 open_solution "solution1"
 set_part {xa7a35tcsg325-2i}
 create_clock -period 10 -name default
