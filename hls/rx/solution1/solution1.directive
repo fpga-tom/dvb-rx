@@ -3,6 +3,41 @@
         <directive functionName="Sync::correlate" label="" functionLabel="">
             <pragma name="PIPELINE"/>
         </directive>
+        <directive functionName="Sync::update" label="" functionLabel="">
+            <pragma name="STREAM">
+                <option name="variable" value="c_out" positionalBoolean="4"/>
+                <option name="depth" value="1"/>
+                <option name="dim" value="1"/>
+            </pragma>
+        </directive>
+        <directive functionName="Sync::align" label="" functionLabel="">
+            <pragma name="PIPELINE"/>
+        </directive>
+        <directive functionName="Sync::findPeak" label="" functionLabel="">
+            <pragma name="PIPELINE"/>
+        </directive>
+        <directive functionName="Sync::update" label="" functionLabel="">
+            <pragma name="PIPELINE"/>
+        </directive>
+        <directive functionName="sync_correlate" label="" functionLabel="">
+            <pragma name="PIPELINE"/>
+        </directive>
+        <directive functionName="sync_align" label="" functionLabel="">
+            <pragma name="PIPELINE"/>
+        </directive>
+        <directive functionName="sync_findPeak" label="" functionLabel="">
+            <pragma name="PIPELINE"/>
+        </directive>
+        <directive functionName="sync_update" label="" functionLabel="">
+            <pragma name="PIPELINE"/>
+        </directive>
+        <directive functionName="sync_update" label="" functionLabel="">
+            <pragma name="STREAM">
+                <option name="variable" value="c_out" positionalBoolean="4"/>
+                <option name="depth" value="1"/>
+                <option name="dim" value="1"/>
+            </pragma>
+        </directive>
     </sourceFile>
 </AutoPilot:ProjectResources>
 

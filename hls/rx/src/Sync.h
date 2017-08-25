@@ -5,12 +5,9 @@
 
 #include "config.h"
 
-class Sync {
-	void correlate(stream_t& d_in, stream_t& d_out);
-	void align(stream_t& d_in, stream_t& d_out);
-public:
-	Sync();
-	~Sync();
-};
+void sync_correlate(stream_t& d_in, stream_t& d_out);
+void sync_findPeak(stream_t& d_in, int_t& peak, bool& valid);
+void sync_align(stream_t& d_in, stream_t& d_out, int_t& peak);
+void sync_update(stream_t& d_in, stream_t& dout);
 
 #endif /* __SYNC_H__ */

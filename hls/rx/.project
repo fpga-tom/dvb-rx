@@ -42,6 +42,26 @@
 			<location>/opt/Xilinx/Vivado_HLS/2017.1/include/ap_fixed.h</location>
 		</link>
 		<link>
+			<name>.reference/apatb_sync_update.cpp</name>
+			<type>1</type>
+			<location>/opt/dvb-rx/hls/rx/solution1/sim/autowrap/systemc/apatb_sync_update.cpp</location>
+		</link>
+		<link>
+			<name>.reference/complex</name>
+			<type>1</type>
+			<location>/opt/Xilinx/Vivado_HLS/2017.1/lnx64/tools/gcc/include/c++/4.6.3/complex</location>
+		</link>
+		<link>
+			<name>.reference/hls_half.h</name>
+			<type>1</type>
+			<location>/opt/Xilinx/Vivado_HLS/2017.1/include/hls_half.h</location>
+		</link>
+		<link>
+			<name>.reference/hls_math.h</name>
+			<type>1</type>
+			<location>/opt/Xilinx/Vivado_HLS/2017.1/include/hls_math.h</location>
+		</link>
+		<link>
 			<name>solution1/constraints</name>
 			<type>2</type>
 			<location>/opt/dvb-rx/hls/rx/solution1/.tcls</location>
@@ -62,9 +82,9 @@
 			<location>/opt/dvb-rx/hls/rx/src/config.h</location>
 		</link>
 		<link>
-			<name>source/main.cpp</name>
+			<name>testbench/SyncTb.cpp</name>
 			<type>1</type>
-			<location>/opt/dvb-rx/hls/rx/src/main.cpp</location>
+			<location>/opt/dvb-rx/hls/rx/src/SyncTb.cpp</location>
 		</link>
 		<link>
 			<name>solution1/constraints/.xml.directive</name>

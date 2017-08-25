@@ -4,6 +4,7 @@
 #include <complex>
 #include <hls_stream.h>
 #include <ap_int.h>
+#include <ap_fixed.h>
 
 #define FFT_LEN 8192
 #define SYM_LEN 10240
@@ -12,8 +13,16 @@
 #define ZEROS_RIGHT 687
 #define CARRIERS 6817
 
+typedef ap_uint<14> int_t;
+typedef ap_fixed<18,15> real_t;
+typedef std::complex<real_t> sample_t;
 
-typedef std::complex<ap_int<14> > data_t;
+
+typedef struct {
+	sample_t sample;
+	bool tlast;
+} data_t;
+
 typedef hls::stream<data_t> stream_t;
 
 #endif /* __CONFIG_H__ */

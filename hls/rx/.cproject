@@ -80,6 +80,36 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1015746608.1442373633" name="SyncTb.cpp" rcbsApplicability="disable" resourcePath="testbench/SyncTb.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.621009708.1173178531">
+						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.621009708.1173178531" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.621009708">
+							<option id="gnu.cpp.compiler.option.preprocessor.def.2066810093" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def"/>
+							<option id="gnu.cpp.compiler.option.include.paths.1577420858" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
+								<listOptionValue builtIn="false" value="/opt/Xilinx/Vivado_HLS/2017.1/lnx64/tools/auto_cc/include"/>
+								<listOptionValue builtIn="false" value="/opt/Xilinx/Vivado_HLS/2017.1/lnx64/tools/systemc/include"/>
+								<listOptionValue builtIn="false" value="/opt/Xilinx/Vivado_HLS/2017.1/include/ap_sysc"/>
+								<listOptionValue builtIn="false" value="/opt/Xilinx/Vivado_HLS/2017.1/include"/>
+								<listOptionValue builtIn="false" value="/opt/Xilinx/Vivado_HLS/2017.1/include/etc"/>
+								<listOptionValue builtIn="false" value="/opt/dvb-rx/hls"/>
+							</option>
+							<option id="gnu.cpp.compiler.option.other.other.598631094" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" value="-std=c++0x -c -fmessage-length=0" valueType="string"/>
+							<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.869090917" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1015746608.809121845" name="Sync.cpp" rcbsApplicability="disable" resourcePath="source/Sync.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.621009708.158160565">
+						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.621009708.158160565" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.621009708">
+							<option id="gnu.cpp.compiler.option.preprocessor.def.1679598137" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def"/>
+							<option id="gnu.cpp.compiler.option.include.paths.1732109736" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
+								<listOptionValue builtIn="false" value="/opt/Xilinx/Vivado_HLS/2017.1/lnx64/tools/auto_cc/include"/>
+								<listOptionValue builtIn="false" value="/opt/Xilinx/Vivado_HLS/2017.1/lnx64/tools/systemc/include"/>
+								<listOptionValue builtIn="false" value="/opt/Xilinx/Vivado_HLS/2017.1/include/ap_sysc"/>
+								<listOptionValue builtIn="false" value="/opt/Xilinx/Vivado_HLS/2017.1/include"/>
+								<listOptionValue builtIn="false" value="/opt/Xilinx/Vivado_HLS/2017.1/include/etc"/>
+								<listOptionValue builtIn="false" value="/opt/dvb-rx/hls"/>
+							</option>
+							<option id="gnu.cpp.compiler.option.other.other.1736555041" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" value="-c -fmessage-length=0" valueType="string"/>
+							<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1327448899" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
+						</tool>
+					</fileInfo>
 					<sourceEntries>
 						<entry excluding="solution1|*.c*|*.C*" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
@@ -156,6 +186,36 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.release.841257909.2138211359" name="SyncTb.cpp" rcbsApplicability="disable" resourcePath="testbench/SyncTb.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release.217085823.1220993112">
+						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release.217085823.1220993112" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release.217085823">
+							<option id="gnu.cpp.compiler.option.preprocessor.def.1078248399" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def"/>
+							<option id="gnu.cpp.compiler.option.include.paths.274514002" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
+								<listOptionValue builtIn="false" value="/opt/Xilinx/Vivado_HLS/2017.1/lnx64/tools/auto_cc/include"/>
+								<listOptionValue builtIn="false" value="/opt/Xilinx/Vivado_HLS/2017.1/lnx64/tools/systemc/include"/>
+								<listOptionValue builtIn="false" value="/opt/Xilinx/Vivado_HLS/2017.1/include/ap_sysc"/>
+								<listOptionValue builtIn="false" value="/opt/Xilinx/Vivado_HLS/2017.1/include"/>
+								<listOptionValue builtIn="false" value="/opt/Xilinx/Vivado_HLS/2017.1/include/etc"/>
+								<listOptionValue builtIn="false" value="/opt/dvb-rx/hls"/>
+							</option>
+							<option id="gnu.cpp.compiler.option.other.other.155533765" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" value="-std=c++0x -c -fmessage-length=0" valueType="string"/>
+							<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.733308347" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.release.841257909.1806641721" name="Sync.cpp" rcbsApplicability="disable" resourcePath="source/Sync.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release.217085823.563483689">
+						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release.217085823.563483689" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release.217085823">
+							<option id="gnu.cpp.compiler.option.preprocessor.def.1048885551" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def"/>
+							<option id="gnu.cpp.compiler.option.include.paths.865417787" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
+								<listOptionValue builtIn="false" value="/opt/Xilinx/Vivado_HLS/2017.1/lnx64/tools/auto_cc/include"/>
+								<listOptionValue builtIn="false" value="/opt/Xilinx/Vivado_HLS/2017.1/lnx64/tools/systemc/include"/>
+								<listOptionValue builtIn="false" value="/opt/Xilinx/Vivado_HLS/2017.1/include/ap_sysc"/>
+								<listOptionValue builtIn="false" value="/opt/Xilinx/Vivado_HLS/2017.1/include"/>
+								<listOptionValue builtIn="false" value="/opt/Xilinx/Vivado_HLS/2017.1/include/etc"/>
+								<listOptionValue builtIn="false" value="/opt/dvb-rx/hls"/>
+							</option>
+							<option id="gnu.cpp.compiler.option.other.other.1156984945" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" value="-c -fmessage-length=0" valueType="string"/>
+							<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1867165824" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
+						</tool>
+					</fileInfo>
 					<sourceEntries>
 						<entry excluding="solution1|*.c*|*.C*" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>

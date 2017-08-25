@@ -4,7 +4,8 @@
     <originFiles name="Sync.cpp" path="/opt/dvb-rx/hls/rx/src/Sync.cpp"/>
     <originFiles name="Sync.h" path="/opt/dvb-rx/hls/rx/src/Sync.h"/>
     <originFiles name="config.h" path="/opt/dvb-rx/hls/rx/src/config.h"/>
-    <originFiles name="main.cpp" path="/opt/dvb-rx/hls/rx/src/main.cpp"/>
   </source>
-  <testbench/>
+  <testbench>
+    <originFiles name="SyncTb.cpp" path="/opt/dvb-rx/hls/rx/src/SyncTb.cpp"/>
+  </testbench>
 </autopilotfilemapping:AutoPilotFileMapping>
