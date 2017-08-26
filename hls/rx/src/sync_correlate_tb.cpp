@@ -10,7 +10,6 @@ int sync_correlate_tb() {
 	std::vector<std::complex<float> > buf(SYM_LEN);
 	std::vector<std::complex<float> > _out(SYM_LEN);
 
-
 	int c = 0;
 	while (inFile.read(reinterpret_cast<char*>(buf.data()),
 			buf.size() * sizeof(std::complex<float>))) {
@@ -21,7 +20,7 @@ int sync_correlate_tb() {
 			d_in.sample.real(buf[i].real() / 512);
 			d_in.sample.imag(buf[i].imag() / 512);
 
-			sync_correlate(d_in, d_out);
+			_sync_correlate(d_in, d_out);
 
 			std::complex<float> o (d_out.sample.real(), d_out.sample.imag());
 			_out.push_back(o);

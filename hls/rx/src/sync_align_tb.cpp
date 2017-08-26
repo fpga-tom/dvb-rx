@@ -55,13 +55,13 @@ int sync_align_tb() {
 
 
 
-			sync_tlast(d_in_scaled, d_tlast);
-			sync_correlate(d_tlast, d_out);
-			sync_find_peak(d_out, peak, valid);
+			_sync_tlast(d_in_scaled, d_tlast);
+			_sync_correlate(d_tlast, d_out);
+			_sync_find_peak(d_out, peak, valid);
 			if(valid == true && c < 5) {
 				peakValid = peak;
 			}
-			sync_align(d_tlast, d_aligned, peakValid);
+			_sync_align(d_tlast, d_aligned, peakValid);
 
 
 			if(c < 5 && d_aligned.tlast == true) {

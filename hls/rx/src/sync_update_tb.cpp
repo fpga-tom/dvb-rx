@@ -25,20 +25,16 @@ void sync_correlate2(data_t& d_in, data_t& d_out) {
 	accDelayHead = (accDelayHead + 1) % CP_LEN;
 
 	d_out.sample = acc.sample;
-	d_out.tlast = d_in.tlast;
 }
 
 int sync_update_tb() {
 	std::ifstream inFile("/opt/dvb-rx/input/dvb_res5.cfile");
-	const std::string ofile = "/opt/dvb-rx/output/sync_update.";
+	const std::string ofile = "/opt/dvb-rx/output/align.";
 	std::vector<std::complex<float> > buf(SYM_LEN);
 	std::vector<std::complex<float> > _out(SYM_LEN);
 
-	int_t peakValid = 0;
-	bool sync = false;
-	int counter = 0;
-
-	stream_t stream_in("stream_in"), stream_out("stream_out");
+	bool frame_valid = false;
+	real_t freq;
 
 	int c = 0;
 	while (inFile.read(reinterpret_cast<char*>(buf.data()),
@@ -51,35 +47,19 @@ int sync_update_tb() {
 			d_in_scaled.sample.real(buf[i].real() / 512);
 			d_in_scaled.sample.imag(buf[i].imag() / 512);
 
-			int_t peak;
-			bool valid = false;
+			_sync_update(d_in_scaled, frame_valid, freq);
+			sync_correlate2(d_in_scaled, d_out);
 
-			stream_in.write(d_in_scaled);
-			sync_update(stream_in, stream_out);
-			stream_out.read(d_out);
+			std::complex<float> o (d_out.sample.real(), d_out.sample.imag());
+			_out.push_back(o);
 
-
-			if(d_out.tlast == true) {
-				sync = true;
-				_out.clear();
-				counter=0;
-			}
-
-			if(sync == true) {
-				if(counter == SYM_LEN) {
-					std::ofstream outFile ( ofile + std::to_string(c++),	std::ios::binary );
-					for(int j = 0; j < buf.size(); j++) {
-						outFile << j << "\t" << abs(_out[j]) << std::endl;
-					}
-					_out.clear();
-					outFile.close();
-					counter = 0;
+			if(frame_valid == true) {
+				std::ofstream outFile ( ofile + std::to_string(c++),	std::ios::binary );
+				for(int j = 0; j < buf.size(); j++) {
+					outFile << j << "\t" << abs(_out[j]) << std::endl;
 				}
-
-				sync_correlate2(d_out, d_out);
-				std::complex<float> o (d_out.sample.real(), d_out.sample.imag());
-				_out.push_back(o);
-				counter++;
+				_out.clear();
+				outFile.close();
 			}
 		}
 	}

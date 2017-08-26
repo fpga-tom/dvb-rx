@@ -5,10 +5,9 @@
 
 #include "config.h"
 
-void sync_tlast(data_t& d_in, data_t& d_out);
-void sync_correlate(data_t& d_in, data_t& d_out);
-void sync_find_peak(data_t& d_in, int_t& peak, bool& valid);
-void sync_align(data_t& d_in, data_t& d_out, int_t& peak);
-void sync_update(stream_t& d_in, stream_t& dout);
+void _sync_clk(int_t peak, bool& frame_valid);
+void _sync_correlate(data_t& d_in, data_t& d_out);
+void _sync_find_peak(data_t& d_in, int_t& peak, bool frame_valid);
+void _sync_update(data_t& d_in, bool& frame_valid, real_t& freq);
 
 #endif /* __SYNC_H__ */

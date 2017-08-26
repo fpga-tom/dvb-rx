@@ -10,7 +10,11 @@ int sync_find_peak_tb() {
 	const std::string ofile = "/opt/dvb-rx/output/peak.";
 	std::vector<std::complex<float> > buf(SYM_LEN);
 
+	bool frame_valid = false;
+	real_t freq;
 	int c = 0;
+	int_t peak;
+
 	std::ofstream outFile ( ofile + std::to_string(c++),	std::ios::binary );
 	while (inFile.read(reinterpret_cast<char*>(buf.data()),
 			buf.size() * sizeof(std::complex<float>))) {
@@ -18,18 +22,16 @@ int sync_find_peak_tb() {
 
 		for(int i = 0;i < buf.size(); i++) {
 
-			data_t d_in, d_tlast, d_out;
+			data_t d_in,  corr_out;
 			d_in.sample.real(buf[i].real() / 512);
 			d_in.sample.imag(buf[i].imag() / 512);
 
-			int_t peak;
-			bool valid;
 
-			sync_tlast(d_in, d_tlast);
-			sync_correlate(d_tlast, d_out);
-			sync_find_peak(d_out, peak, valid);
+			_sync_correlate(d_in, corr_out);
+			_sync_clk(peak, frame_valid);
+			_sync_find_peak(corr_out, peak, frame_valid);
 
-			if(valid == true) {
+			if(frame_valid == true) {
 				outFile << c++ << "\t" << peak << std::endl;
 			}
 		}

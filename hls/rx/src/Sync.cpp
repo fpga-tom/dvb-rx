@@ -1,24 +1,27 @@
 #include <cmath>
 #include "Sync.h"
 
-void sync_tlast(data_t& d_in, data_t& d_out) {
-	static int sampleCount = 0;
-	sampleCount++;
-	d_out = d_in;
+void _sync_clk(int_t peak, bool& frame_valid) {
+	static int_t sample_count = 0;
+	sample_count++;
 
-	if(sampleCount == SYM_LEN) {
-		d_out.tlast = true;
-		sampleCount = 0;
+	if(sample_count == SYM_LEN) {
+		frame_valid = true;
+		if(peak < SYM_LEN / 2) {
+			sample_count = -peak >> 2;
+		} else {
+			sample_count = -(peak - SYM_LEN)  >> 2;
+		}
 	} else {
-		d_out.tlast = false;
+		frame_valid = false;
 	}
 }
 
-void sync_correlate(data_t& d_in, data_t& d_out) {
+void _sync_correlate(data_t& d_in, data_t& d_out) {
 	static sample_t delay[FFT_LEN];
-	static int delayHead = 0;
+	static int_t delayHead = 0;
 	static sample_t accDelay[CP_LEN];
-	static int accDelayHead = 0;
+	static int_t accDelayHead = 0;
 	static data_t acc;
 
 	// cyclic buffer for delay
@@ -35,35 +38,17 @@ void sync_correlate(data_t& d_in, data_t& d_out) {
 	accDelayHead = (accDelayHead + 1) % CP_LEN;
 
 	d_out.sample = acc.sample;
-	d_out.tlast = d_in.tlast;
 }
 
-void sync_align(data_t& d_in, data_t& d_out, int_t& peak) {
-	static int_t count = 0;
 
-	d_out.sample = d_in.sample;
-	if(count == peak) {
-		d_out.tlast = true;
-	} else {
-		d_out.tlast = false;
-	}
-
-	if(d_in.tlast == true) {
-		count = 0;
-	} else {
-		count++;
-	}
-}
-
-void sync_find_peak(data_t& d_in, int_t& peak, bool& valid) {
+void _sync_find_peak(data_t& d_in, int_t& peak, bool frame_valid) {
 	static real_t max = 0;
 	static int_t idx = 0;
 	static int_t count = 0;
 
 
-	if(d_in.tlast == true) {
+	if(frame_valid == true) {
 		peak = idx;
-		valid = true;
 		max = 0;
 		count = 0;
 		idx = 0;
@@ -76,29 +61,15 @@ void sync_find_peak(data_t& d_in, int_t& peak, bool& valid) {
 			idx = count;
 		}
 		count++;
-		valid=false;
 	}
 }
 
-void sync_update(stream_t& d_in, stream_t& d_out) {
-	data_t data_in, corr_out, data_out, d_tlast;
-	static int_t peakValid;
-	int_t peak;
-	bool valid;
-	static int_t c;
+void _sync_update(data_t& d_in, bool& frame_valid, real_t& freq) {
+	data_t corr_out;
+	static int_t peak = 0;
 
-	d_in.read(data_in);
-	sync_tlast(data_in, d_tlast);
-	sync_correlate(d_tlast, corr_out);
-	sync_find_peak(corr_out, peak, valid);
-	if(valid == true) {
-		if(c < 5) {
-			peakValid = peak;
-		} else {
-			c++;
-		}
-	}
-	sync_align(d_tlast, data_out, peakValid);
+	_sync_correlate(d_in, corr_out);
+	_sync_clk(peak, frame_valid);
+	_sync_find_peak(corr_out, peak, frame_valid);
 
-	d_out.write(data_out);
 }

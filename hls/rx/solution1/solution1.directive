@@ -28,18 +28,22 @@
         <directive functionName="sync_findPeak" label="" functionLabel="">
             <pragma name="PIPELINE"/>
         </directive>
-        <directive functionName="sync_update" label="" functionLabel="">
-            <pragma name="PIPELINE"/>
-        </directive>
-        <directive functionName="sync_update" label="" functionLabel="">
-            <pragma name="STREAM">
-                <option name="variable" value="c_out" positionalBoolean="4"/>
-                <option name="depth" value="1"/>
-                <option name="dim" value="1"/>
-            </pragma>
-        </directive>
         <directive functionName="sync_find_peak" label="" functionLabel="">
             <pragma name="PIPELINE"/>
+        </directive>
+        <directive functionName="sync_update" label="" functionLabel="">
+            <pragma name="INTERFACE">
+                <option name="ap_fifo" value="" positionalBoolean="mode"/>
+                <option name="depth" value="10240"/>
+                <option name="port" value="d_in" positionalBoolean="4"/>
+            </pragma>
+        </directive>
+        <directive functionName="sync_update" label="" functionLabel="">
+            <pragma name="INTERFACE">
+                <option name="ap_fifo" value="" positionalBoolean="mode"/>
+                <option name="depth" value="10240"/>
+                <option name="port" value="d_out" positionalBoolean="4"/>
+            </pragma>
         </directive>
     </sourceFile>
 </AutoPilot:ProjectResources>

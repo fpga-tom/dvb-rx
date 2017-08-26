@@ -13,7 +13,7 @@
 #define ZEROS_RIGHT 687
 #define CARRIERS 6817
 
-typedef ap_uint<14> int_t;
+typedef ap_int<15> int_t;
 typedef ap_fixed<18,15> real_t;
 typedef std::complex<ap_int<12> > sample_t;
 
@@ -22,6 +22,7 @@ typedef struct {
 	sample_t sample;
 	bool tlast;
 } data_t;
+
 
 typedef hls::stream<data_t> stream_t;
 
