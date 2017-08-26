@@ -72,6 +72,11 @@
 			<location>/opt/dvb-rx/hls/rx/src/sync_find_peak_tb.cpp</location>
 		</link>
 		<link>
+			<name>testbench/sync_update_tb.cpp</name>
+			<type>1</type>
+			<location>/opt/dvb-rx/hls/rx/src/sync_update_tb.cpp</location>
+		</link>
+		<link>
 			<name>testbench/tb.cpp</name>
 			<type>1</type>
 			<location>/opt/dvb-rx/hls/rx/src/tb.cpp</location>

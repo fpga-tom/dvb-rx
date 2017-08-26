@@ -81,17 +81,24 @@ void sync_find_peak(data_t& d_in, int_t& peak, bool& valid) {
 }
 
 void sync_update(stream_t& d_in, stream_t& d_out) {
-	data_t data_in, corr_out, data_out;
-	int_t peakTmp, peak;
+	data_t data_in, corr_out, data_out, d_tlast;
+	static int_t peakValid;
+	int_t peak;
 	bool valid;
+	static int_t c;
 
 	d_in.read(data_in);
-	sync_correlate(data_in, corr_out);
-	sync_find_peak(corr_out, peakTmp, valid);
+	sync_tlast(data_in, d_tlast);
+	sync_correlate(d_tlast, corr_out);
+	sync_find_peak(corr_out, peak, valid);
 	if(valid == true) {
-		peak = peakTmp;
+		if(c < 5) {
+			peakValid = peak;
+		} else {
+			c++;
+		}
 	}
-	sync_align(data_in, data_out, peak);
+	sync_align(d_tlast, data_out, peakValid);
 
 	d_out.write(data_out);
 }

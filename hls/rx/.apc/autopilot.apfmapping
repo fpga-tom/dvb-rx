@@ -10,5 +10,6 @@
     <originFiles name="sync_correlate_tb.cpp" path="/opt/dvb-rx/hls/rx/src/sync_correlate_tb.cpp"/>
     <originFiles name="sync_find_peak_tb.cpp" path="/opt/dvb-rx/hls/rx/src/sync_find_peak_tb.cpp"/>
     <originFiles name="tb.cpp" path="/opt/dvb-rx/hls/rx/src/tb.cpp"/>
+    <originFiles name="sync_update_tb.cpp" path="/opt/dvb-rx/hls/rx/src/sync_update_tb.cpp"/>
   </testbench>
 </autopilotfilemapping:AutoPilotFileMapping>

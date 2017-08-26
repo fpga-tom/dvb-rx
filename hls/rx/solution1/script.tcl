@@ -11,6 +11,7 @@ add_files rx/src/config.h
 add_files -tb rx/src/sync_align_tb.cpp
 add_files -tb rx/src/sync_correlate_tb.cpp -cflags "-std=c++0x"
 add_files -tb rx/src/sync_find_peak_tb.cpp -cflags "-std=c++0x"
+add_files -tb rx/src/sync_update_tb.cpp
 add_files -tb rx/src/tb.cpp
 open_solution "solution1"
 set_part {xa7a35tcsg325-2i}
