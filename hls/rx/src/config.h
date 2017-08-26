@@ -15,7 +15,7 @@
 
 typedef ap_uint<14> int_t;
 typedef ap_fixed<18,15> real_t;
-typedef std::complex<real_t> sample_t;
+typedef std::complex<ap_int<12> > sample_t;
 
 
 typedef struct {

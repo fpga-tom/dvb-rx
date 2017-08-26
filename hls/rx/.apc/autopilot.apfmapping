@@ -6,6 +6,9 @@
     <originFiles name="config.h" path="/opt/dvb-rx/hls/rx/src/config.h"/>
   </source>
   <testbench>
-    <originFiles name="SyncTb.cpp" path="/opt/dvb-rx/hls/rx/src/SyncTb.cpp"/>
+    <originFiles name="sync_align_tb.cpp" path="/opt/dvb-rx/hls/rx/src/sync_align_tb.cpp"/>
+    <originFiles name="sync_correlate_tb.cpp" path="/opt/dvb-rx/hls/rx/src/sync_correlate_tb.cpp"/>
+    <originFiles name="sync_find_peak_tb.cpp" path="/opt/dvb-rx/hls/rx/src/sync_find_peak_tb.cpp"/>
+    <originFiles name="tb.cpp" path="/opt/dvb-rx/hls/rx/src/tb.cpp"/>
   </testbench>
 </autopilotfilemapping:AutoPilotFileMapping>

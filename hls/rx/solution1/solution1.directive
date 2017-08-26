@@ -38,6 +38,9 @@
                 <option name="dim" value="1"/>
             </pragma>
         </directive>
+        <directive functionName="sync_find_peak" label="" functionLabel="">
+            <pragma name="PIPELINE"/>
+        </directive>
     </sourceFile>
 </AutoPilot:ProjectResources>
 

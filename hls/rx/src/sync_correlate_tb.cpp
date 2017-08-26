@@ -4,13 +4,12 @@
 #include <fstream>
 #include <string>
 
-int main(int argc, char **argv) {
+int sync_correlate_tb() {
 	std::ifstream inFile("/opt/dvb-rx/input/dvb_res5.cfile");
 	const std::string ofile = "/opt/dvb-rx/output/corr.";
 	std::vector<std::complex<float> > buf(SYM_LEN);
 	std::vector<std::complex<float> > _out(SYM_LEN);
 
-	stream_t stream_in("stream_in"), stream_out("stream_out");
 
 	int c = 0;
 	while (inFile.read(reinterpret_cast<char*>(buf.data()),
@@ -18,16 +17,13 @@ int main(int argc, char **argv) {
 
 		for(int i = 0;i < buf.size(); i++) {
 
-			data_t d;
-			d.sample.real(buf[i].real() / 512);
-			d.sample.imag(buf[i].imag() / 512);
-			stream_in.write(d);
+			data_t d_in, d_out;
+			d_in.sample.real(buf[i].real() / 512);
+			d_in.sample.imag(buf[i].imag() / 512);
 
-			sync_correlate(stream_in, stream_out);
+			sync_correlate(d_in, d_out);
 
-			stream_out.read(d);
-
-			std::complex<float> o (d.sample.real(), d.sample.imag());
+			std::complex<float> o (d_out.sample.real(), d_out.sample.imag());
 			_out.push_back(o);
 		}
 

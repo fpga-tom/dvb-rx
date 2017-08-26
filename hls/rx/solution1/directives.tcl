@@ -13,3 +13,4 @@ set_directive_pipeline "sync_align"
 set_directive_pipeline "sync_findPeak"
 set_directive_pipeline "sync_update"
 set_directive_stream -depth 1 -dim 1 "sync_update" c_out
+set_directive_pipeline "sync_find_peak"
