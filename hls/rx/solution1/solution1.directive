@@ -45,6 +45,18 @@
                 <option name="port" value="d_out" positionalBoolean="4"/>
             </pragma>
         </directive>
+        <directive functionName="_sync_clk" label="" functionLabel="">
+            <pragma name="PIPELINE"/>
+        </directive>
+        <directive functionName="_sync_correlate" label="" functionLabel="">
+            <pragma name="PIPELINE"/>
+        </directive>
+        <directive functionName="_sync_find_peak" label="" functionLabel="">
+            <pragma name="PIPELINE"/>
+        </directive>
+        <directive functionName="_sync_update" label="" functionLabel="">
+            <pragma name="PIPELINE"/>
+        </directive>
     </sourceFile>
 </AutoPilot:ProjectResources>
 

@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <autopilotfilemapping:AutoPilotFileMapping xmlns:autopilotfilemapping="www.autoesl.com/autopilotfilemapping">
   <source>
-    <originFiles name="config.h" path="/opt/dvb-rx/hls/rx/src/config.h"/>
-    <originFiles name="Sync.h" path="/opt/dvb-rx/hls/rx/src/Sync.h"/>
-    <originFiles name="Sync.cpp" path="/opt/dvb-rx/hls/rx/src/Sync.cpp"/>
-    <originFiles name="IFFT.h" path="/opt/dvb-rx/hls/rx/src/IFFT.h"/>
     <originFiles name="IFFT.cpp" path="/opt/dvb-rx/hls/rx/src/IFFT.cpp"/>
+    <originFiles name="IFFT.h" path="/opt/dvb-rx/hls/rx/src/IFFT.h"/>
+    <originFiles name="Sync.cpp" path="/opt/dvb-rx/hls/rx/src/Sync.cpp"/>
+    <originFiles name="Sync.h" path="/opt/dvb-rx/hls/rx/src/Sync.h"/>
+    <originFiles name="config.h" path="/opt/dvb-rx/hls/rx/src/config.h"/>
+    <originFiles name="serial_to_parallel.cpp" path="/opt/dvb-rx/hls/rx/src/serial_to_parallel.cpp"/>
+    <originFiles name="serial_to_parallel.h" path="/opt/dvb-rx/hls/rx/src/serial_to_parallel.h"/>
   </source>
   <testbench>
     <originFiles name="tb.cpp" path="/opt/dvb-rx/hls/rx/src/tb.cpp"/>

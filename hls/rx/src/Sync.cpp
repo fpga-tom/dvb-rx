@@ -1,4 +1,5 @@
 #include <cmath>
+#include <ap_shift_reg.h>
 #include "Sync.h"
 
 void _sync_clk(int_t peak, bool& frame_valid) {
@@ -18,24 +19,15 @@ void _sync_clk(int_t peak, bool& frame_valid) {
 }
 
 void _sync_correlate(data_t& d_in, data_t& d_out) {
-	static sample_t delay[FFT_LEN];
-	static int_t delayHead = 0;
-	static sample_t accDelay[CP_LEN];
-	static int_t accDelayHead = 0;
+	static ap_shift_reg<sample_t, FFT_LEN> delay;
+	static ap_shift_reg<sample_t, CP_LEN> accDelay;
 	static data_t acc;
 
-	// cyclic buffer for delay
-	sample_t tmp = delay[delayHead];
-	delay[delayHead] = d_in.sample;
-	delayHead = (delayHead + 1) % FFT_LEN;
+	sample_t tmp = delay.shift(d_in.sample);
 
 	// multiply conjugate
 	sample_t cj = d_in.sample * std::conj(tmp);
-	acc.sample += cj - accDelay[accDelayHead];
-
-	// cyclic buffer for accumulator
-	accDelay[accDelayHead] = cj;
-	accDelayHead = (accDelayHead + 1) % CP_LEN;
+	acc.sample += cj - accDelay.shift(cj);
 
 	d_out.sample = acc.sample;
 }

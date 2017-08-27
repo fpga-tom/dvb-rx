@@ -67,6 +67,16 @@
 			<location>/opt/dvb-rx/hls/rx/src/config.h</location>
 		</link>
 		<link>
+			<name>source/serial_to_parallel.cpp</name>
+			<type>1</type>
+			<location>/opt/dvb-rx/hls/rx/src/serial_to_parallel.cpp</location>
+		</link>
+		<link>
+			<name>source/serial_to_parallel.h</name>
+			<type>1</type>
+			<location>/opt/dvb-rx/hls/rx/src/serial_to_parallel.h</location>
+		</link>
+		<link>
 			<name>testbench/sync_correlate_tb.cpp</name>
 			<type>1</type>
 			<location>/opt/dvb-rx/hls/rx/src/sync_correlate_tb.cpp</location>

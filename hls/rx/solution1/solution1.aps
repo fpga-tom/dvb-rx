@@ -2,11 +2,8 @@
     <downStreamTool>
         <DownStreamTool name=""/>
     </downStreamTool>
-    <clockList>
-        <clock default="false" name="default" period="10"/>
-    </clockList>
     <config>
-        <schedule model="sync_update"/>
+        <schedule model="_sync_update"/>
     </config>
     <UIConfigurations>
         <UIAutosynConf hideTrivialOp="true" isBasedOnBoard="false" isSolutionDirty="true" isStopAskAgain="false" showDetailDesignViewer="false">
@@ -67,5 +64,8 @@
         <library name="DefaultPlatform" value="xilinx/aartix7/aartix7"/>
         <library name="DefaultPlatform" value="xilinx/aartix7/aartix7_fpv6"/>
     </libraryList>
+    <clockList>
+        <clock name="default" default="false" period="10"/>
+    </clockList>
 </solution>
 
