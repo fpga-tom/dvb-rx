@@ -17,11 +17,7 @@ typedef ap_int<15> int_t;
 typedef ap_fixed<18,15> real_t;
 typedef std::complex<ap_int<12> > sample_t;
 
-
-typedef struct {
-	sample_t sample;
-	bool tlast;
-} data_t;
+typedef sample_t data_t;
 
 
 typedef hls::stream<data_t> stream_t;

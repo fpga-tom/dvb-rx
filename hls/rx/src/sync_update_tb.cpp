@@ -13,18 +13,18 @@ void sync_correlate2(data_t& d_in, data_t& d_out) {
 
 	// cyclic buffer for delay
 	sample_t tmp = delay[delayHead];
-	delay[delayHead] = d_in.sample;
+	delay[delayHead] = d_in;
 	delayHead = (delayHead + 1) % FFT_LEN;
 
 	// multiply conjugate
-	sample_t cj = d_in.sample * std::conj(tmp);
-	acc.sample += cj - accDelay[accDelayHead];
+	sample_t cj = d_in * std::conj(tmp);
+	acc += cj - accDelay[accDelayHead];
 
 	// cyclic buffer for accumulator
 	accDelay[accDelayHead] = cj;
 	accDelayHead = (accDelayHead + 1) % CP_LEN;
 
-	d_out.sample = acc.sample;
+	d_out = acc;
 }
 
 int sync_update_tb() {
@@ -44,13 +44,13 @@ int sync_update_tb() {
 
 			data_t d_in_scaled, d_out;
 
-			d_in_scaled.sample.real(buf[i].real() / 512);
-			d_in_scaled.sample.imag(buf[i].imag() / 512);
+			d_in_scaled.real(buf[i].real() / 512);
+			d_in_scaled.imag(buf[i].imag() / 512);
 
 			_sync_update(d_in_scaled, frame_valid, freq);
 			sync_correlate2(d_in_scaled, d_out);
 
-			std::complex<float> o (d_out.sample.real(), d_out.sample.imag());
+			std::complex<float> o (d_out.real(), d_out.imag());
 			_out.push_back(o);
 
 			if(frame_valid == true) {

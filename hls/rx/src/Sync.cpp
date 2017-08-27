@@ -23,13 +23,13 @@ void _sync_correlate(data_t& d_in, data_t& d_out) {
 	static ap_shift_reg<sample_t, CP_LEN> accDelay;
 	static data_t acc;
 
-	sample_t tmp = delay.shift(d_in.sample);
+	sample_t tmp = delay.shift(d_in);
 
 	// multiply conjugate
-	sample_t cj = d_in.sample * std::conj(tmp);
-	acc.sample += cj - accDelay.shift(cj);
+	sample_t cj = d_in * std::conj(tmp);
+	acc += cj - accDelay.shift(cj);
 
-	d_out.sample = acc.sample;
+	d_out = acc;
 }
 
 
@@ -45,8 +45,8 @@ void _sync_find_peak(data_t& d_in, int_t& peak, bool frame_valid) {
 		count = 0;
 		idx = 0;
 	} else {
-		real_t r = real(d_in.sample) >> 4;
-		real_t i = imag(d_in.sample) >> 4;
+		real_t r = real(d_in) >> 4;
+		real_t i = imag(d_in) >> 4;
 		real_t a = r*r + i*i;
 		if(max < a) {
 			max = a;

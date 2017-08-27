@@ -23,8 +23,8 @@ int sync_find_peak_tb() {
 		for(int i = 0;i < buf.size(); i++) {
 
 			data_t d_in,  corr_out;
-			d_in.sample.real(buf[i].real() / 512);
-			d_in.sample.imag(buf[i].imag() / 512);
+			d_in.real(buf[i].real() / 512);
+			d_in.imag(buf[i].imag() / 512);
 
 
 			_sync_correlate(d_in, corr_out);
