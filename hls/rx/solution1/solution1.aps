@@ -3,7 +3,7 @@
         <DownStreamTool name=""/>
     </downStreamTool>
     <config>
-        <schedule model="_sync_update"/>
+        <schedule model="_ofdm_ifft"/>
     </config>
     <UIConfigurations>
         <UIAutosynConf hideTrivialOp="true" isBasedOnBoard="false" isSolutionDirty="true" isStopAskAgain="false" showDetailDesignViewer="false">

@@ -18,22 +18,22 @@ void _sync_clk(int_t peak, bool& frame_valid) {
 	}
 }
 
-void _sync_correlate(data_t& d_in, data_t& d_out) {
+void _sync_correlate(sample_t& d_in, acc_t& d_out) {
 	static ap_shift_reg<sample_t, FFT_LEN> delay;
-	static ap_shift_reg<sample_t, CP_LEN> accDelay;
-	static data_t acc;
+	static ap_shift_reg<acc_t, CP_LEN> accDelay;
+	static acc_t acc;
 
 	sample_t tmp = delay.shift(d_in);
 
 	// multiply conjugate
-	sample_t cj = d_in * std::conj(tmp);
+	acc_t cj = d_in * std::conj(tmp);
 	acc += cj - accDelay.shift(cj);
 
 	d_out = acc;
 }
 
 
-void _sync_find_peak(data_t& d_in, int_t& peak, bool frame_valid) {
+void _sync_find_peak(acc_t& d_in, int_t& peak, bool frame_valid) {
 	static real_t max = 0;
 	static int_t idx = 0;
 	static int_t count = 0;
@@ -56,8 +56,8 @@ void _sync_find_peak(data_t& d_in, int_t& peak, bool frame_valid) {
 	}
 }
 
-void _sync_update(data_t& d_in, bool& frame_valid, real_t& freq) {
-	data_t corr_out;
+void _sync_update(sample_t& d_in, bool& frame_valid, real_t& freq) {
+	acc_t corr_out;
 	static int_t peak = 0;
 
 	_sync_correlate(d_in, corr_out);

@@ -1,15 +1,16 @@
+#include "tb.h"
 #include "Sync.h"
 #include <cmath>
 #include <iostream>
 #include <fstream>
 #include <string>
 
-void sync_correlate2(data_t& d_in, data_t& d_out) {
+void sync_correlate2(sample_t& d_in, acc_t& d_out) {
 	static sample_t delay[FFT_LEN];
 	static int delayHead = 0;
-	static sample_t accDelay[CP_LEN];
+	static acc_t accDelay[CP_LEN];
 	static int accDelayHead = 0;
-	static data_t acc;
+	static acc_t acc;
 
 	// cyclic buffer for delay
 	sample_t tmp = delay[delayHead];
@@ -17,7 +18,7 @@ void sync_correlate2(data_t& d_in, data_t& d_out) {
 	delayHead = (delayHead + 1) % FFT_LEN;
 
 	// multiply conjugate
-	sample_t cj = d_in * std::conj(tmp);
+	acc_t cj = d_in * std::conj(tmp);
 	acc += cj - accDelay[accDelayHead];
 
 	// cyclic buffer for accumulator
@@ -28,6 +29,7 @@ void sync_correlate2(data_t& d_in, data_t& d_out) {
 }
 
 int sync_update_tb() {
+	std::cout << __PRETTY_FUNCTION__ << std::endl;
 	std::ifstream inFile("/opt/dvb-rx/input/dvb_res5.cfile");
 	const std::string ofile = "/opt/dvb-rx/output/align.";
 	std::vector<std::complex<float> > buf(SYM_LEN);
@@ -42,10 +44,11 @@ int sync_update_tb() {
 
 		for(int i = 0;i < buf.size(); i++) {
 
-			data_t d_in_scaled, d_out;
+			sample_t d_in_scaled;
+			acc_t d_out;
 
-			d_in_scaled.real(buf[i].real() / 512);
-			d_in_scaled.imag(buf[i].imag() / 512);
+			d_in_scaled.real(buf[i].real() / SCALING_FACTOR);
+			d_in_scaled.imag(buf[i].imag() / SCALING_FACTOR);
 
 			_sync_update(d_in_scaled, frame_valid, freq);
 			sync_correlate2(d_in_scaled, d_out);

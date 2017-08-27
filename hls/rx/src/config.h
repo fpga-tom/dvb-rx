@@ -15,11 +15,11 @@
 
 typedef ap_int<15> int_t;
 typedef ap_fixed<18,15> real_t;
-typedef std::complex<ap_int<12> > sample_t;
+typedef std::complex<ap_fixed<12,1> > sample_t;
 
-typedef sample_t data_t;
+typedef std::complex<ap_fixed<12,6> > acc_t;
 
 
-typedef hls::stream<data_t> stream_t;
+typedef hls::stream<sample_t> stream_t;
 
 #endif /* __CONFIG_H__ */

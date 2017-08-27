@@ -16,6 +16,7 @@ struct param1 : hls::ip_fft::params_t {
 	static const unsigned max_nfft = 13;
 	static const unsigned input_width = 16;
 	static const unsigned output_width = 16;
+	static const unsigned arch_opt = hls::ip_fft::pipelined_streaming_io;
 };
 
 typedef hls::ip_fft::config_t<param1> config_t;
