@@ -58,7 +58,7 @@ int sync_update_tb() {
 
 			if(frame_valid == true) {
 				std::ofstream outFile ( ofile + std::to_string(c++),	std::ios::binary );
-				for(int j = 0; j < buf.size(); j++) {
+				for(int j = 0; j < _out.size(); j++) {
 					outFile << j << "\t" << abs(_out[j]) << std::endl;
 				}
 				_out.clear();

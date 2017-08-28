@@ -24,6 +24,9 @@ typedef hls::ip_fft::status_t<param1> status_t;
 
 typedef std::complex<ap_fixed<16,1> > fft_data_t;
 
+// inverser fourier transform
 void _ofdm_ifft(sample_t d_in[FFT_LEN], sample_t d_out[FFT_LEN]);
+// integer frequency offset
+void _ofdm_ifo(sample_t d_in[FFT_LEN], int_t& ifo);
 
 #endif /* __OFDM_H__ */

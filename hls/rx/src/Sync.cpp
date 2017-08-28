@@ -4,14 +4,19 @@
 
 void _sync_clk(int_t peak, bool& frame_valid) {
 	static int_t sample_count = 0;
+	static int_t clk_count = 0;
 	sample_count++;
 
 	if(sample_count == SYM_LEN) {
 		frame_valid = true;
-		if(peak < SYM_LEN / 2) {
-			sample_count = -peak >> 2;
+		if(clk_count++ < 35) {
+			if(peak < SYM_LEN / 2) {
+				sample_count = -peak >> 2;
+			} else {
+				sample_count = -(peak - SYM_LEN)  >> 2;
+			}
 		} else {
-			sample_count = -(peak - SYM_LEN)  >> 2;
+			sample_count = 0;
 		}
 	} else {
 		frame_valid = false;
@@ -45,8 +50,8 @@ void _sync_find_peak(acc_t& d_in, int_t& peak, bool frame_valid) {
 		count = 0;
 		idx = 0;
 	} else {
-		real_t r = real(d_in) >> 4;
-		real_t i = imag(d_in) >> 4;
+		real_t r = d_in.real();// >> 4;
+		real_t i = d_in.imag();// >> 4;
 		real_t a = r*r + i*i;
 		if(max < a) {
 			max = a;

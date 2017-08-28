@@ -15,7 +15,7 @@ int sync_find_peak_tb() {
 	bool frame_valid = false;
 	real_t freq;
 	int c = 0;
-	int_t peak;
+	int_t peak = 0;
 
 	std::ofstream outFile ( ofile + std::to_string(c++),	std::ios::binary );
 	while (inFile.read(reinterpret_cast<char*>(buf.data()),

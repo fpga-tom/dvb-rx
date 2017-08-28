@@ -42,16 +42,6 @@
 			<location>/opt/dvb-rx/hls/rx/solution1/.tcls</location>
 		</link>
 		<link>
-			<name>source/IFFT.cpp</name>
-			<type>1</type>
-			<location>/opt/dvb-rx/hls/rx/src/IFFT.cpp</location>
-		</link>
-		<link>
-			<name>source/IFFT.h</name>
-			<type>1</type>
-			<location>/opt/dvb-rx/hls/rx/src/IFFT.h</location>
-		</link>
-		<link>
 			<name>source/Sync.cpp</name>
 			<type>1</type>
 			<location>/opt/dvb-rx/hls/rx/src/Sync.cpp</location>
@@ -67,14 +57,29 @@
 			<location>/opt/dvb-rx/hls/rx/src/config.h</location>
 		</link>
 		<link>
-			<name>source/serial_to_parallel.cpp</name>
+			<name>source/ofdm.cpp</name>
 			<type>1</type>
-			<location>/opt/dvb-rx/hls/rx/src/serial_to_parallel.cpp</location>
+			<location>/opt/dvb-rx/hls/rx/src/ofdm.cpp</location>
 		</link>
 		<link>
-			<name>source/serial_to_parallel.h</name>
+			<name>source/ofdm.h</name>
 			<type>1</type>
-			<location>/opt/dvb-rx/hls/rx/src/serial_to_parallel.h</location>
+			<location>/opt/dvb-rx/hls/rx/src/ofdm.h</location>
+		</link>
+		<link>
+			<name>source/rom.cpp</name>
+			<type>1</type>
+			<location>/opt/dvb-rx/hls/rx/src/rom.cpp</location>
+		</link>
+		<link>
+			<name>testbench/ofdm_ifft_tb.cpp</name>
+			<type>1</type>
+			<location>/opt/dvb-rx/hls/rx/src/ofdm_ifft_tb.cpp</location>
+		</link>
+		<link>
+			<name>testbench/ofdm_ifo_tb.cpp</name>
+			<type>1</type>
+			<location>/opt/dvb-rx/hls/rx/src/ofdm_ifo_tb.cpp</location>
 		</link>
 		<link>
 			<name>testbench/sync_correlate_tb.cpp</name>
@@ -95,6 +100,11 @@
 			<name>testbench/tb.cpp</name>
 			<type>1</type>
 			<location>/opt/dvb-rx/hls/rx/src/tb.cpp</location>
+		</link>
+		<link>
+			<name>testbench/tb.h</name>
+			<type>1</type>
+			<location>/opt/dvb-rx/hls/rx/src/tb.h</location>
 		</link>
 		<link>
 			<name>solution1/constraints/.xml.directive</name>
