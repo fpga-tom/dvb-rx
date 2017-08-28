@@ -33,7 +33,7 @@ void _ofdm_ifft(sample_t d_in[FFT_LEN], sample_t d_out[FFT_LEN]) {
 
 	for(int_t i=0; i < FFT_LEN; i++) {
 		if(i < FFT_LEN / 2 ) {
-			d_out[i] = fft_out[FFT_LEN / 2 + i];
+			d_out[i] = fft_out[i + FFT_LEN / 2];
 		} else {
 			d_out[i] = fft_out[i - FFT_LEN / 2];
 		}
@@ -41,25 +41,29 @@ void _ofdm_ifft(sample_t d_in[FFT_LEN], sample_t d_out[FFT_LEN]) {
 }
 
 void _ofdm_ifo(sample_t d_in[FFT_LEN], int_t& ifo) {
-	static sample_t prev[FFT_LEN];
-	real_t max = 0;
+	static sample_t prev[IFO_RANGE][NUM_CONTINUAL_PILOTS];
+	real_t max[IFO_RANGE] = {0,};
+	real_t m = 0;
 
-	OFFSET_LOOP: for(int_t offset = -3; offset <= 3 ; offset++) {
+	OFFSET_LOOP: for(int_t offset = 0; offset < IFO_RANGE ; offset++) {
+#pragma HLS UNROLL factor=7
 		acc_t acc(0,0);
 		for(int_t i=0; i < NUM_CONTINUAL_PILOTS; i++) {
-			int_t idx = continual_pilots_indices[i] + offset + ZEROS_LEFT;
-			acc += d_in[idx]*std::conj(prev[idx]);
+			int_t idx = continual_pilots_matrix[offset][i];
+			sample_t s = d_in[idx];
+			acc += s*prev[offset][i];
+			prev[offset][i] = std::conj(s);
 		}
 		real_t re = acc.real();
 		real_t im = acc.imag();
 		real_t n = re*re + im*im;
-		if(max < n) {
-			max = n;
-			ifo = offset;
-		}
+		max[offset] = n;
 	}
 
-	for(int_t i=0;i < FFT_LEN; i++) {
-		prev[i] = d_in[i];
+	for(int_t offset = 0; offset < IFO_RANGE; offset++) {
+		if(m < max[offset]) {
+			m = max[offset];
+			ifo = offset;
+		}
 	}
 }

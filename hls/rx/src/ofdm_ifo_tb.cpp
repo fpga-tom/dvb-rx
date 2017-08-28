@@ -14,7 +14,7 @@ int ofdm_ifo_tb() {
 
 	bool frame_valid = false;
 	real_t freq;
-	int_t ifo = 0;
+	int_t ifo = 0xff;
 
 	int c = 0;
 	sample_t d_parallel[SYM_LEN], d_fft[FFT_LEN];
