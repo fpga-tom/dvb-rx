@@ -46,7 +46,7 @@ void _ofdm_ifo(sample_t d_in[FFT_LEN], int_t& ifo) {
 
 	OFFSET_LOOP: for(int_t offset = -3; offset <= 3 ; offset++) {
 		acc_t acc(0,0);
-		for(int_t i=0; i < NUM_CONTINUAL_PILOTS/2; i++) {
+		for(int_t i=0; i < NUM_CONTINUAL_PILOTS; i++) {
 			int_t idx = continual_pilots_indices[i] + offset + ZEROS_LEFT;
 			acc += d_in[idx]*std::conj(prev[idx]);
 		}
