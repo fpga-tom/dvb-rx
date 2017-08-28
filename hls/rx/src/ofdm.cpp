@@ -1,6 +1,6 @@
 #include "ofdm.h"
 
-void _ofdm_serial_to_parallel(sample_t& d_in, sample_t d_out[SYM_LEN], bool frame_valid) {
+void ofdm_serial_to_parallel(sample_t& d_in, sample_t d_out[SYM_LEN], bool frame_valid) {
 	static int_t count =0;
 
 	d_out[count++] = d_in;
@@ -10,12 +10,10 @@ void _ofdm_serial_to_parallel(sample_t& d_in, sample_t d_out[SYM_LEN], bool fram
 	}
 }
 
-void _ofdm_ifft(sample_t d_in[FFT_LEN], sample_t d_out[FFT_LEN]) {
+void ofdm_ifft(sample_t d_in[FFT_LEN], sample_t d_out[FFT_LEN]) {
 #pragma HLS DATA_PACK variable=d_out
 #pragma HLS DATA_PACK variable=d_in
 #pragma HLS DATAFLOW
-#pragma HLS INTERFACE ap_fifo depth=8192 port=d_out
-#pragma HLS INTERFACE ap_fifo depth=8192 port=d_in
 	config_t fft_config1;
 #pragma HLS DATA_PACK variable=fft_config1
 	status_t fft_status1;
@@ -40,7 +38,7 @@ void _ofdm_ifft(sample_t d_in[FFT_LEN], sample_t d_out[FFT_LEN]) {
 	}
 }
 
-void _ofdm_ifo(sample_t d_in[FFT_LEN], int_t& ifo) {
+void ofdm_ifo(sample_t d_in[FFT_LEN], int_t& ifo) {
 	static sample_t prev[IFO_RANGE][NUM_CONTINUAL_PILOTS];
 	real_t max[IFO_RANGE] = {0,};
 	real_t m = 0;

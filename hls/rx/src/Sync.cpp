@@ -2,7 +2,7 @@
 #include <ap_shift_reg.h>
 #include "Sync.h"
 
-void _sync_clk(int_t peak, bool& frame_valid) {
+void sync_clk(int_t peak, bool& frame_valid) {
 	static int_t sample_count = 0;
 	static int_t clk_count = 0;
 	sample_count++;
@@ -23,7 +23,7 @@ void _sync_clk(int_t peak, bool& frame_valid) {
 	}
 }
 
-void _sync_correlate(sample_t& d_in, acc_t& d_out) {
+void sync_correlate(sample_t& d_in, acc_t& d_out) {
 	static ap_shift_reg<sample_t, FFT_LEN> delay;
 	static ap_shift_reg<acc_t, CP_LEN> accDelay;
 	static acc_t acc;
@@ -38,7 +38,7 @@ void _sync_correlate(sample_t& d_in, acc_t& d_out) {
 }
 
 
-void _sync_find_peak(acc_t& d_in, int_t& peak, bool frame_valid) {
+void sync_find_peak(acc_t& d_in, int_t& peak, bool frame_valid) {
 	static real_t max = 0;
 	static int_t idx = 0;
 	static int_t count = 0;
@@ -61,12 +61,12 @@ void _sync_find_peak(acc_t& d_in, int_t& peak, bool frame_valid) {
 	}
 }
 
-void _sync_update(sample_t& d_in, bool& frame_valid, real_t& freq) {
+void sync_update(sample_t& d_in, bool& frame_valid, real_t& freq) {
 	acc_t corr_out;
 	static int_t peak = 0;
 
-	_sync_correlate(d_in, corr_out);
-	_sync_clk(peak, frame_valid);
-	_sync_find_peak(corr_out, peak, frame_valid);
+	sync_correlate(d_in, corr_out);
+	sync_clk(peak, frame_valid);
+	sync_find_peak(corr_out, peak, frame_valid);
 
 }

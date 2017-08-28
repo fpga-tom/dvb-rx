@@ -32,11 +32,11 @@ int ofdm_ifft_tb() {
 			d_in_scaled.real(buf[i].real() / SCALING_FACTOR);
 			d_in_scaled.imag(buf[i].imag() / SCALING_FACTOR);
 
-			_sync_update(d_in_scaled, frame_valid, freq);
-			_ofdm_serial_to_parallel(d_in_scaled, d_parallel, frame_valid);
+			sync_update(d_in_scaled, frame_valid, freq);
+			ofdm_serial_to_parallel(d_in_scaled, d_parallel, frame_valid);
 
 			if(frame_valid == true) {
-				_ofdm_ifft(d_parallel+CP_LEN, d_fft);
+				ofdm_ifft(d_parallel+CP_LEN, d_fft);
 				_out.clear();
 				for(int j=0; j < FFT_LEN; j++) {
 					std::complex<float> o (d_fft[j].real(), d_fft[j].imag());

@@ -23,7 +23,7 @@ int sync_correlate_tb() {
 			d_in.real(buf[i].real() / SCALING_FACTOR);
 			d_in.imag(buf[i].imag() / SCALING_FACTOR);
 
-			_sync_correlate(d_in, d_out);
+			sync_correlate(d_in, d_out);
 
 			std::complex<float> o (d_out.real(), d_out.imag());
 			_out.push_back(o);

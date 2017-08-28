@@ -1,20 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <autopilotfilemapping:AutoPilotFileMapping xmlns:autopilotfilemapping="www.autoesl.com/autopilotfilemapping">
   <source>
-    <originFiles name="Sync.cpp" path="/opt/dvb-rx/hls/rx/src/Sync.cpp"/>
-    <originFiles name="Sync.h" path="/opt/dvb-rx/hls/rx/src/Sync.h"/>
-    <originFiles name="config.h" path="/opt/dvb-rx/hls/rx/src/config.h"/>
-    <originFiles name="ofdm.cpp" path="/opt/dvb-rx/hls/rx/src/ofdm.cpp"/>
-    <originFiles name="ofdm.h" path="/opt/dvb-rx/hls/rx/src/ofdm.h"/>
     <originFiles name="rom.cpp" path="/opt/dvb-rx/hls/rx/src/rom.cpp"/>
+    <originFiles name="ofdm.h" path="/opt/dvb-rx/hls/rx/src/ofdm.h"/>
+    <originFiles name="ofdm.cpp" path="/opt/dvb-rx/hls/rx/src/ofdm.cpp"/>
+    <originFiles name="config.h" path="/opt/dvb-rx/hls/rx/src/config.h"/>
+    <originFiles name="Sync.h" path="/opt/dvb-rx/hls/rx/src/Sync.h"/>
+    <originFiles name="Sync.cpp" path="/opt/dvb-rx/hls/rx/src/Sync.cpp"/>
+    <originFiles name="rx.cpp" path="/opt/dvb-rx/hls/rx/src/rx.cpp"/>
+    <originFiles name="rx.h" path="/opt/dvb-rx/hls/rx/src/rx.h"/>
   </source>
   <testbench>
-    <originFiles name="ofdm_ifft_tb.cpp" path="/opt/dvb-rx/hls/rx/src/ofdm_ifft_tb.cpp"/>
-    <originFiles name="ofdm_ifo_tb.cpp" path="/opt/dvb-rx/hls/rx/src/ofdm_ifo_tb.cpp"/>
-    <originFiles name="sync_correlate_tb.cpp" path="/opt/dvb-rx/hls/rx/src/sync_correlate_tb.cpp"/>
-    <originFiles name="sync_find_peak_tb.cpp" path="/opt/dvb-rx/hls/rx/src/sync_find_peak_tb.cpp"/>
-    <originFiles name="sync_update_tb.cpp" path="/opt/dvb-rx/hls/rx/src/sync_update_tb.cpp"/>
-    <originFiles name="tb.cpp" path="/opt/dvb-rx/hls/rx/src/tb.cpp"/>
     <originFiles name="tb.h" path="/opt/dvb-rx/hls/rx/src/tb.h"/>
+    <originFiles name="tb.cpp" path="/opt/dvb-rx/hls/rx/src/tb.cpp"/>
+    <originFiles name="sync_update_tb.cpp" path="/opt/dvb-rx/hls/rx/src/sync_update_tb.cpp"/>
+    <originFiles name="sync_find_peak_tb.cpp" path="/opt/dvb-rx/hls/rx/src/sync_find_peak_tb.cpp"/>
+    <originFiles name="sync_correlate_tb.cpp" path="/opt/dvb-rx/hls/rx/src/sync_correlate_tb.cpp"/>
+    <originFiles name="ofdm_ifo_tb.cpp" path="/opt/dvb-rx/hls/rx/src/ofdm_ifo_tb.cpp"/>
+    <originFiles name="ofdm_ifft_tb.cpp" path="/opt/dvb-rx/hls/rx/src/ofdm_ifft_tb.cpp"/>
   </testbench>
 </autopilotfilemapping:AutoPilotFileMapping>

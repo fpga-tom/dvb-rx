@@ -4,7 +4,7 @@
 #include <hls_fft.h>
 #include "config.h"
 
-void _ofdm_serial_to_parallel(sample_t& d_in, sample_t d_out[SYM_LEN], bool frame_valid);
+void ofdm_serial_to_parallel(sample_t& d_in, sample_t d_out[SYM_LEN], bool frame_valid);
 
 const char FFT_CONFIG_WIDTH = 16;
 const char FFT_STATUS_WIDTH = 8;
@@ -25,8 +25,8 @@ typedef hls::ip_fft::status_t<param1> status_t;
 typedef std::complex<ap_fixed<16,1> > fft_data_t;
 
 // inverser fourier transform
-void _ofdm_ifft(sample_t d_in[FFT_LEN], sample_t d_out[FFT_LEN]);
+void ofdm_ifft(sample_t d_in[FFT_LEN], sample_t d_out[FFT_LEN]);
 // integer frequency offset
-void _ofdm_ifo(sample_t d_in[FFT_LEN], int_t& ifo);
+void ofdm_ifo(sample_t d_in[FFT_LEN], int_t& ifo);
 
 #endif /* __OFDM_H__ */

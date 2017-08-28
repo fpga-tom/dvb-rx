@@ -72,6 +72,16 @@
 			<location>/opt/dvb-rx/hls/rx/src/rom.cpp</location>
 		</link>
 		<link>
+			<name>source/rx.cpp</name>
+			<type>1</type>
+			<location>/opt/dvb-rx/hls/rx/src/rx.cpp</location>
+		</link>
+		<link>
+			<name>source/rx.h</name>
+			<type>1</type>
+			<location>/opt/dvb-rx/hls/rx/src/rx.h</location>
+		</link>
+		<link>
 			<name>testbench/ofdm_ifft_tb.cpp</name>
 			<type>1</type>
 			<location>/opt/dvb-rx/hls/rx/src/ofdm_ifft_tb.cpp</location>

@@ -50,7 +50,7 @@ int sync_update_tb() {
 			d_in_scaled.real(buf[i].real() / SCALING_FACTOR);
 			d_in_scaled.imag(buf[i].imag() / SCALING_FACTOR);
 
-			_sync_update(d_in_scaled, frame_valid, freq);
+			sync_update(d_in_scaled, frame_valid, freq);
 			sync_correlate2(d_in_scaled, d_out);
 
 			std::complex<float> o (d_out.real(), d_out.imag());

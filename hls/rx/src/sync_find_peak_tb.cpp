@@ -30,9 +30,9 @@ int sync_find_peak_tb() {
 			d_in.imag(buf[i].imag() / SCALING_FACTOR);
 
 
-			_sync_correlate(d_in, corr_out);
-			_sync_clk(peak, frame_valid);
-			_sync_find_peak(corr_out, peak, frame_valid);
+			sync_correlate(d_in, corr_out);
+			sync_clk(peak, frame_valid);
+			sync_find_peak(corr_out, peak, frame_valid);
 
 			if(frame_valid == true) {
 				outFile << c++ << "\t" << peak << std::endl;
